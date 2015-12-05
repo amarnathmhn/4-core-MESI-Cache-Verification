@@ -88,24 +88,25 @@ interface globalInterface (input logic clk);
    logic [1:0]                  Updated_MESI_state_proc[`CORES-1:0];
    logic [1:0]                  Updated_MESI_state_snoop[`CORES-1:0];
   //Interface of Address Segregator Block
-   logic [`BLK_OFFSET_SIZE - 1 : 0]  Blk_offset_proc[`CORES-1:0];
-   logic [`TAG_SIZE - 1 : 0]         Tag_proc[`CORES-1:0];
-   logic [`INDEX_SIZE - 1 : 0]       Index_proc[`CORES-1:0]; 
+   logic [`BLK_OFFSET_SIZE - 1 : 0]  Blk_offset_proc[2*`CORES-1:0];
+   logic [`TAG_SIZE - 1 : 0]         Tag_proc[2*`CORES-1:0];
+   logic [`INDEX_SIZE - 1 : 0]       Index_proc[2*`CORES-1:0]; 
    logic [`INDEX_SIZE - 1 : 0]       Index_snoop[`CORES-1:0]; 
-   logic [`CACHE_DATA_SIZE-1 : 0]    Cache_var[`CORES][0 : `CACHE_DEPTH-1];
-   logic [`CACHE_TAG_MESI_SIZE-1 : 0] Cache_proc_contr[`CORES][0 : `CACHE_DEPTH-1];
+   logic [`CACHE_DATA_SIZE-1 : 0]    Cache_var[2*`CORES][0 : `CACHE_DEPTH-1];
+   logic [`CACHE_TAG_MESI_SIZE-1  : 0] Cache_proc_contr[`CORES][0 : `CACHE_DEPTH-1];
+   logic [`CACHE_TAG_VALID_SIZE-1 : 0] Cache_proc_contr[`CORES][0 : `CACHE_DEPTH-1];
    logic [1:0] Blk_access_proc[`CORES-1:0];
    logic [1:0] Blk_access_snoop[`CORES-1:0];
 
-   logic [`LRU_SIZE-1 : 0]	LRU_var	[0:`NUM_OF_SETS-1][`CORES-1:0];
+   logic [`LRU_SIZE-1 : 0]	LRU_var	[`CORES][0:`NUM_OF_SETS-1];
 
    clocking ClkBlk @(posedge clk);
       output PrRd;
       output PrWr; 
       output Address;
-      output Shared;
+      //input Shared;
       inout Data_Bus_Com;
-      input Invalidate;
+      //input Invalidate;
       inout Data_in_Bus;
    endclocking
 

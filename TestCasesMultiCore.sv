@@ -248,11 +248,11 @@ virtual task check_Shared_assert(virtual interface globalInterface sintf);
        end 
        end
       begin 
-         wait(sintf.ClkBlk.Shared);
+         wait(sintf.Shared);
       end
     join_any
     disable fork;
-    assert(sintf.ClkBlk.Shared)
+    assert(sintf.Shared)
     else begin $display("BUG:: Shared not asserted");
       status = "FAILED"; 
     end
@@ -383,14 +383,14 @@ globalInterface sintf ,input [3:0] core );
 mesiStateType expectedMesiState,input [3:0] core);
     mesiStateType mst;
     delay = 0;
-    while(sintf.Updated_MESI_state_proc != expectedMesiState)begin
+    while(sintf.Updated_MESI_state_proc[core] != expectedMesiState)begin
        delay += 1;
        @(posedge sintf.clk);
        if(delay >= Max_Resp_Delay)
         break;
      end
-     mst = mesiStateType'(sintf.Updated_MESI_state_proc);
-    assert(sintf.Updated_MESI_state_proc == expectedMesiState) $display("SUCCESS:: Next MESI State consistent with Expected MESI State: Expected = %s, Actual = %s",expectedMesiState.name(),mst.name());
+     mst = mesiStateType'(sintf.Updated_MESI_state_proc[core]);
+    assert(sintf.Updated_MESI_state_proc[core] == expectedMesiState) $display("SUCCESS:: Next MESI State consistent with Expected MESI State: Expected = %s, Actual = %s",expectedMesiState.name(),mst.name());
     else begin $display("BUG:: Next MESI State does not match with expected next MESI state: Expected = %s, Actual = %s",expectedMesiState.name(),mst.name());
      status = "FAILED";
     end
@@ -399,7 +399,7 @@ mesiStateType expectedMesiState,input [3:0] core);
   //Task to check if Data Bus is set with valid data
   virtual task check_DataBus_valid(virtual interface globalInterface sintf,input [31:0] data,input [3:0] core );
     delay = 0;
-    while(sintf.Data_Bus[core] != data || data=== 32'hz || sintf.Data_Bus === 32'hZ) begin
+    while(sintf.Data_Bus[core] != data || data=== 32'hz || sintf.Data_Bus[core] === 32'hZ) begin
          delay += 1; 
          @(posedge sintf.clk);
          if(delay >= Max_Resp_Delay)
@@ -415,7 +415,7 @@ mesiStateType expectedMesiState,input [3:0] core);
  virtual task check_CacheVar_Data(virtual interface globalInterface sintf, input [31:0] data,input [31:0] Address,input [3:0] core);
  reg [31:0] temp_data;   
     delay = 0;
-      while(sintf.Cache_var[core][{Address[`INDEX_MSB:`INDEX_LSB],sintf.Blk_access_proc}][`CACHE_DATA_MSB:`CACHE_DATA_LSB] != data ) begin
+      while(sintf.Cache_var[core][{Address[`INDEX_MSB:`INDEX_LSB],sintf.Blk_access_proc[core]}][`CACHE_DATA_MSB:`CACHE_DATA_LSB] != data ) begin
            delay += 1;
            if(delay >= Max_Resp_Delay) begin
               $display("WARNING:: Timeout for Data to be stored in the Cache");
@@ -423,7 +423,7 @@ mesiStateType expectedMesiState,input [3:0] core);
            end
            @(posedge sintf.clk);
       end
-    temp_data = sintf.Cache_var[core][{Address[`INDEX_MSB:`INDEX_LSB],sintf.Blk_access_proc}][`CACHE_DATA_MSB:`CACHE_DATA_LSB];
+    temp_data = sintf.Cache_var[core][{Address[`INDEX_MSB:`INDEX_LSB],sintf.Blk_access_proc[core]}][`CACHE_DATA_MSB:`CACHE_DATA_LSB];
     assert(temp_data === data) $display("SUCCESS:: Data stored in Cache matches with Expected Data: Stored Data = %x , Expected Data = %x",temp_data,data);
     else $display("BUG:: Incorrect data is stored in the Cache: Stored Data = %x , Expected Data = %x ",$time,temp_data, data);
  endtask :  check_CacheVar_Data
@@ -433,7 +433,7 @@ mesiStateType expectedMesiState,input [3:0] core);
         dif.Address_Com_reg 			<= 32'hZ;
 	dif.ClkBlk.Data_Bus_Com 		<= 32'hZ;
 	dif.Data_in_Bus_reg	 		<= 32'hZ;	
-	dif.Data_Bus_reg                	<= 32'hZ;
+	dif.Data_Bus_reg[core]                	<= 32'hZ;
         dif.ClkBlk.PrRd[core]                         <= 0;
         dif.ClkBlk.PrWr[core]                         <= 0;
         dif.ClkBlk.Address[core]                      <= 32'hz;
@@ -483,7 +483,7 @@ class topReadMiss extends baseTestClass;
     sintf.ClkBlk.PrRd[core] <= 1;
      sintf.ClkBlk.PrWr[core] <= 0;
      sintf.ClkBlk.Address[core] <= Address;
-     sintf.ClkBlk.Shared <= Shared;
+     //sintf.ClkBlk.Shared <= Shared;
      expected_lru_var = 3'bxxx; 
   endtask :drive 
 
@@ -521,15 +521,15 @@ class topReadMiss extends baseTestClass;
     //Check if LRU Value is properly assigned
     //wait(sintf.Blk_access_proc != 2'bZZ && 
     //     sintf.Blk_access_proc != 2'bxx)
-    determine_LRU_var_exp(sintf.Blk_access_proc,expected_lru_var);
-    if(sintf.Blk_access_proc == 0 || sintf.Blk_access_proc == 1 ) begin
-      assert(expected_lru_var[2:1] == sintf.LRU_var[Address[`INDEX_MSB:`INDEX_LSB]][2:1]) $display("SUCCESS:: Line accessed = %b, Expected LRU Var = %b, Actual LRY Var = %b ",sintf.Blk_access_proc,expected_lru_var,sintf.LRU_var[Address[`INDEX_MSB:`INDEX_LSB]]);
-      else begin $display("BUG:: Expected lru var = %b, actual lru var = %b",expected_lru_var,sintf.LRU_var[Address[`INDEX_MSB:`INDEX_LSB]]); 
+    determine_LRU_var_exp(sintf.Blk_access_proc[core],expected_lru_var);
+    if(sintf.Blk_access_proc[core] == 0 || sintf.Blk_access_proc[core] == 1 ) begin
+      assert(expected_lru_var[2:1] == sintf.LRU_var[core][Address[`INDEX_MSB:`INDEX_LSB]][2:1]) $display("SUCCESS:: Line accessed = %b, Expected LRU Var = %b, Actual LRY Var = %b ",sintf.Blk_access_proc[core],expected_lru_var,sintf.LRU_var[core][Address[`INDEX_MSB:`INDEX_LSB]]);
+      else begin $display("BUG:: Expected lru var = %b, actual lru var = %b",expected_lru_var,sintf.LRU_var[core][Address[`INDEX_MSB:`INDEX_LSB]]); 
       end
     end
-    else if (sintf.Blk_access_proc == 2 || sintf.Blk_access_proc == 3) begin
-      assert({expected_lru_var[2],expected_lru_var[0]} == {sintf.LRU_var[Address[`INDEX_MSB:`INDEX_LSB]][2],sintf.LRU_var[Address[`INDEX_MSB:`INDEX_LSB]][0]}) $display("SUCCESS:: Line accessed = %b, Expected LRU Var = %b, Actual LRY Var = %b ",sintf.Blk_access_proc,expected_lru_var,sintf.LRU_var[Address[`INDEX_MSB:`INDEX_LSB]]);
-      else begin $display("BUG:: Expected lru var = %b, actual lru var = %b",expected_lru_var,sintf.LRU_var[Address[`INDEX_MSB:`INDEX_LSB]]); 
+    else if (sintf.Blk_access_proc[core] == 2 || sintf.Blk_access_proc[core] == 3) begin
+      assert({expected_lru_var[2],expected_lru_var[0]} == {sintf.LRU_var[core][Address[`INDEX_MSB:`INDEX_LSB]][2],sintf.LRU_var[core][Address[`INDEX_MSB:`INDEX_LSB]][0]}) $display("SUCCESS:: Line accessed = %b, Expected LRU Var = %b, Actual LRY Var = %b ",sintf.Blk_access_proc[core],expected_lru_var,sintf.LRU_var[core][Address[`INDEX_MSB:`INDEX_LSB]]);
+      else begin $display("BUG:: Expected lru var = %b, actual lru var = %b",expected_lru_var,sintf.LRU_var[core][Address[`INDEX_MSB:`INDEX_LSB]]); 
       end
     end
     //Check if Data_Bus is valid with the data
@@ -598,11 +598,11 @@ class topReadMissReplaceModified extends baseTestClass;
       sintf.ClkBlk.Address[core] <= Address;
       sintf.ClkBlk.PrRd[core]    <= 1;
       sintf.ClkBlk.PrWr[core]    <= 0;
-      sintf.ClkBlk.Shared  <= Shared;
+      //sintf.Shared  <= Shared;
       // Check for behavior
       //Com_Bus_Req_proc_0 and CPU_stall must be made high
       check_ComBusReqproc_CPUStall_assert(sintf,core);
-      lineToBeRepl  =  determine_LineToBeReplaced_LRU(sintf.LRU_var[Address[`INDEX_MSB:`INDEX_LSB]]);
+      lineToBeRepl  =  determine_LineToBeReplaced_LRU(sintf.LRU_var[core][Address[`INDEX_MSB:`INDEX_LSB]]);
       IndexToBeRepl =  Address[`INDEX_MSB:`INDEX_LSB];
       TagToBeRepl   =  sintf.Cache_proc_contr[core][{IndexToBeRepl,lineToBeRepl}][`CACHE_TAG_MSB: `CACHE_TAG_LSB];
       //Since free block is not available, replacement of the modified block has to be carried out. Wait for bus access grant from arbiter
@@ -663,7 +663,7 @@ class topReadMissReplaceModified extends baseTestClass;
      sintf.ClkBlk.Data_Bus_Com <= 32'hdadadada;
      sintf.Data_in_Bus_reg  = 1;
      repeat(4) @(posedge sintf.clk);
-     actualMesi = sintf.Cache_proc_contr[core][{Address[`INDEX_MSB:`INDEX_LSB],lineToBeRepl}][`CACHE_MESI_MSB:`CACHE_MESI_LSB];
+     actualMesi = mesiStateType'(sintf.Cache_proc_contr[core][{Address[`INDEX_MSB:`INDEX_LSB],lineToBeRepl}][`CACHE_MESI_MSB:`CACHE_MESI_LSB]);
      if(Shared == 0) begin
          assert(sintf.Cache_proc_contr[core][{Address[`INDEX_MSB:`INDEX_LSB],lineToBeRepl}][`CACHE_MESI_MSB:`CACHE_MESI_LSB] == EXCLUSIVE)
          else begin $display("BUG: Updated MESI State = %s Does not match with Expected state = EXCLUSIVE",actualMesi.name());
@@ -695,7 +695,7 @@ class topWriteMiss extends baseTestClass;
           sintf.ClkBlk.PrWr[core]      <= 1; 
           sintf.ClkBlk.PrRd[core]      <= 0;
           sintf.ClkBlk.Address[core]   <= Address; 
-          sintf.Data_Bus_reg  = wrData;
+          sintf.Data_Bus_reg[core]  = wrData;
          $display("Processor Write Attempt is made for Address = %x with Data = %x",Address, wrData);
           //wait for CPU_stall and Com_Bus_Gnt_proc to be made high
           check_ComBusReqproc_CPUStall_assert(sintf,core);
@@ -742,7 +742,7 @@ class topWriteMissModifiedReplacement extends baseTestClass;
           sintf.ClkBlk.PrWr[core]      <= 1; 
           sintf.ClkBlk.PrRd[core]      <= 0;
           sintf.ClkBlk.Address[core]   <= Address; 
-          sintf.Data_Bus_reg  = wrData;
+          sintf.Data_Bus_reg[core]  = wrData;
 
     $display("Processor Write Attempt is made for Address = %x with Data = %x",Address, wrData);
           // Check for behavior
@@ -753,13 +753,13 @@ class topWriteMissModifiedReplacement extends baseTestClass;
       wait(sintf.Com_Bus_Gnt_proc_0);
             
       //Wait till Address com bus is loaded with Address of the Block to be replaced
-      lineToBeRepl    =  determine_LineToBeReplaced_LRU(sintf.LRU_var[Address[`INDEX_MSB:`INDEX_LSB]]);
+      lineToBeRepl    =  determine_LineToBeReplaced_LRU(sintf.LRU_var[core][Address[`INDEX_MSB:`INDEX_LSB]]);
       TagToBeRepl     =  sintf.Cache_proc_contr[core][{Address[`INDEX_MSB:`INDEX_LSB],lineToBeRepl}][`CACHE_TAG_MSB:`CACHE_TAG_LSB];
       IndexToBeRepl   =  Address[`INDEX_MSB:`INDEX_LSB];
       $display("MESI State of the Block To Be Replaced is %x",sintf.Cache_proc_contr[core][{IndexToBeRepl,lineToBeRepl}][`CACHE_MESI_MSB:`CACHE_MESI_LSB]);
-      DataToBeWrittenBack =  sintf.Cache_var[core][{Address[`INDEX_MSB:`INDEX_LSB],sintf.Blk_access_proc}][`CACHE_DATA_MSB:`CACHE_DATA_LSB];
-      assert(lineToBeRepl == sintf.LRU_replacement_proc) $display("SUCCESS:: LRU Replacemet Proc = %x matches with Expected Line To Be Replaced = %x",sintf.LRU_replacement_proc,lineToBeRepl);
-      else begin $display("BUG:: LRU Replacemet Proc = %x matches with Expected Line To Be Replaced = %x",sintf.LRU_replacement_proc,lineToBeRepl); 
+      DataToBeWrittenBack =  sintf.Cache_var[core][{Address[`INDEX_MSB:`INDEX_LSB],sintf.Blk_access_proc[core]}][`CACHE_DATA_MSB:`CACHE_DATA_LSB];
+      assert(lineToBeRepl == sintf.LRU_replacement_proc[core]) $display("SUCCESS:: LRU Replacemet Proc = %x matches with Expected Line To Be Replaced = %x",sintf.LRU_replacement_proc[core],lineToBeRepl);
+      else begin $display("BUG:: LRU Replacemet Proc = %x matches with Expected Line To Be Replaced = %x",sintf.LRU_replacement_proc[core],lineToBeRepl); 
         status = "FAILED";
       end
       
@@ -814,7 +814,7 @@ class topWriteMissModifiedReplacement extends baseTestClass;
      sintf.ClkBlk.Data_Bus_Com <= 32'hdddddddd;
      sintf.Data_in_Bus_reg  = 1;
      repeat(4) @(posedge sintf.clk);
-     actualMesi = sintf.Cache_proc_contr[core][{Address[`INDEX_MSB:`INDEX_LSB],lineToBeRepl}][`CACHE_MESI_MSB:`CACHE_MESI_LSB];
+     actualMesi = mesiStateType'(sintf.Cache_proc_contr[core][{Address[`INDEX_MSB:`INDEX_LSB],lineToBeRepl}][`CACHE_MESI_MSB:`CACHE_MESI_LSB]);
      if(Shared == 0) begin
          assert(sintf.Cache_proc_contr[core][{Address[`INDEX_MSB:`INDEX_LSB],lineToBeRepl}][`CACHE_MESI_MSB:`CACHE_MESI_LSB] == MODIFIED)
          else begin $display("BUG: Updated MESI State = %s Does not match with Expected state = EXCLUSIVE",actualMesi.name());
@@ -847,7 +847,7 @@ class topWriteHit extends baseTestClass;
 			sintf.ClkBlk.Address[core] <= Address;
 			sintf.ClkBlk.PrRd[core]    <= 0;
 			sintf.ClkBlk.PrWr[core]    <= 1;
-			sintf.Data_Bus_reg    = wrData;
+			sintf.Data_Bus_reg[core]    = wrData;
                         
             if(MESI_state == SHARED) begin
                check_Invalidate_assert(sintf);
@@ -895,9 +895,9 @@ class topBusRdSnoop extends baseTestClass;
 	 //Check if DUT Cache Requests for Snoop Access
 	 check_ComBusReqSnoop_assert(sintf,core);
 	 //Calculate current MESI state of the Address Block requested.
-         MESI_state = sintf.Cache_proc_contr[core][{Address[`INDEX_MSB:`INDEX_LSB],sintf.Blk_access_snoop}][`CACHE_MESI_MSB: `CACHE_MESI_LSB];
+         MESI_state = mesiStateType'(sintf.Cache_proc_contr[core][{Address[`INDEX_MSB:`INDEX_LSB],sintf.Blk_access_snoop[core]}][`CACHE_MESI_MSB: `CACHE_MESI_LSB]);
          $display("MESI State of the Block to Be accessed = %x",MESI_state);
-         temp_data  = sintf.Cache_var[core][{Address[`INDEX_MSB:`INDEX_LSB],sintf.Blk_access_snoop}][`CACHE_DATA_MSB: `CACHE_DATA_LSB];
+         temp_data  = sintf.Cache_var[core][{Address[`INDEX_MSB:`INDEX_LSB],sintf.Blk_access_snoop[core]}][`CACHE_DATA_MSB: `CACHE_DATA_LSB];
 	 //if data is already in bus, then check if Bus Snoop request is deasserted
 	 if(sintf.Data_in_Bus) begin
 	   check_ComBusReqSnoop_deassert(sintf,core);
@@ -970,9 +970,9 @@ class topBusRdXSnoop extends baseTestClass;
 	 //Check if DUT Cache Requests for Snoop Access
 	 check_ComBusReqSnoop_assert(sintf,core);
 	 //Calculate current MESI state of the Address Block requested.
-         MESI_state = sintf.Cache_proc_contr[core][{Address[`INDEX_MSB:`INDEX_LSB],sintf.Blk_access_snoop}][`CACHE_MESI_MSB: `CACHE_MESI_LSB];
+         MESI_state = mesiStateType'(sintf.Cache_proc_contr[core][{Address[`INDEX_MSB:`INDEX_LSB],sintf.Blk_access_snoop[core]}][`CACHE_MESI_MSB: `CACHE_MESI_LSB]);
          $display("MESI State of the Block to Be accessed = %x",MESI_state);
-         temp_data  = sintf.Cache_var[core][{Address[`INDEX_MSB:`INDEX_LSB],sintf.Blk_access_snoop}][`CACHE_DATA_MSB: `CACHE_DATA_LSB]; 
+         temp_data  = sintf.Cache_var[core][{Address[`INDEX_MSB:`INDEX_LSB],sintf.Blk_access_snoop[core]}][`CACHE_DATA_MSB: `CACHE_DATA_LSB]; 
 	  //if data is already in bus, then check if Bus Snoop request is deasserted
 	  if(sintf.Data_in_Bus) begin
 	  	check_ComBusReqSnoop_deassert(sintf,core);
@@ -1014,32 +1014,32 @@ class topBusRdXSnoop extends baseTestClass;
 	endtask
 endclass : topBusRdXSnoop
 
-class topSnoopInvalidate extends baseTestClass;
+/*class topSnoopInvalidate extends baseTestClass;
    //Task to send Invalidate signal to the DUT
    task testInvalidation(virtual globalInterface sintf);
    $display("\n****** TEST topSnoopInvalidate Started ******\n");
          sintf.Address_Com_reg = Address;
 	 sintf.ClkBlk.PrRd[core]     <= 0;
          sintf.ClkBlk.PrWr[core]     <= 0;
-         sintf.ClkBlk.Invalidate <= 1;    
+         //sintf.ClkBlk.Invalidate <= 1;    
    //Check if block with the Address is Invalidated 
    repeat(Max_Resp_Delay) @(posedge sintf.clk);
    delay = 0;
    fork
-     wait(sintf.Cache_proc_contr[core][{sintf.Index_snoop,sintf.Blk_access_snoop}][`CACHE_MESI_MSB:`CACHE_MESI_LSB] == INVALID);
+     wait(sintf.Cache_proc_contr[core][{sintf.Index_snoop[core],sintf.Blk_access_snoop}][`CACHE_MESI_MSB:`CACHE_MESI_LSB] == INVALID);
      begin
        repeat(Max_Resp_Delay) @(posedge sintf.clk);
      end
    join_any
    disable fork;
-   assert(sintf.Cache_proc_contr[core][{sintf.Index_snoop,sintf.Blk_access_snoop}][`CACHE_MESI_MSB:`CACHE_MESI_LSB] == INVALID) $display("SUCCESS:Invalidation is done" );
+   assert(sintf.Cache_proc_contr[core][{sintf.Index_snoop[core],sintf.Blk_access_snoop}][`CACHE_MESI_MSB:`CACHE_MESI_LSB] == INVALID) $display("SUCCESS:Invalidation is done" );
    else begin $display("BUG:: Invalidation Not Done upon snooping Invalidate");
      status = "FAILED";
    end
     
     $display("\n****** Test topSnoopInvalidate Done Status = %s ******\n",!sintf.failed?status:"FAILED"); 
-   endtask : testInvalidation
-endclass
+   endtask : testInvalidation 
+endclass */
 
 
 
