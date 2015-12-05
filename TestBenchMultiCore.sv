@@ -22,90 +22,88 @@ module top_C1();
  //Virtual interface for global interface
  virtual interface globalInterface local_intf;
  //Connect internal registers of DUT to interface
- assign g_intf[0].Cache_var            = CMC.P1_DL.cb.Cache_var;
- assign g_intf[0].Cache_proc_contr     = CMC.P1_DL.cb.Cache_proc_contr;
- assign g_intf[0].LRU_var              = CMC.P1_DL.cc.LRU_var;
- assign g_intf[0].LRU_replacement_proc = CMC.P1_DL.cc.LRU_replacement_proc;
+assign g_intf.Cache_var[0]            = CMC.P1_DL.cb.Cache_var;
+ assign g_intf.Cache_proc_contr[0]     = CMC.P1_DL.cb.Cache_proc_contr;
+ assign g_intf.LRU_var[0]              = CMC.P1_DL.cc.LRU_var;
+ assign g_intf.LRU_replacement_proc[0] = CMC.P1_DL.LRU_replacement_proc;
 
- assign g_intf[1].Cache_var            = CMC.P2_DL.cb.Cache_var;
- assign g_intf[1].Cache_proc_contr     = CMC.P2_DL.cb.Cache_proc_contr;
- assign g_intf[1].LRU_var              = CMC.P2_DL.cc.LRU_var;
- assign g_intf[1].LRU_replacement_proc = CMC.P2_DL.cc.LRU_replacement_proc;
+assign g_intf.Cache_var[1]            = CMC.P2_DL.cb.Cache_var;
+ assign g_intf.Cache_proc_contr[1]     = CMC.P2_DL.cb.Cache_proc_contr;
+ assign g_intf.LRU_var[1]              = CMC.P2_DL.cc.LRU_var;
+ assign g_intf.LRU_replacement_proc[1] = CMC.P2_DL.LRU_replacement_proc;
 
+assign g_intf.Cache_var[2]            = CMC.P3_DL.cb.Cache_var;
+ assign g_intf.Cache_proc_contr[2]     = CMC.P3_DL.cb.Cache_proc_contr;
+ assign g_intf.LRU_var[2]              = CMC.P3_DL.cc.LRU_var;
+ assign g_intf.LRU_replacement_proc[2] = CMC.P3_DL.LRU_replacement_proc;
 
- assign g_intf[2].Cache_var            = CMC.P3_DL.cb.Cache_var;
- assign g_intf[2].Cache_proc_contr     = CMC.P3_DL.cb.Cache_proc_contr;
- assign g_intf[2].LRU_var              = CMC.P3_DL.cc.LRU_var;
- assign g_intf[2].LRU_replacement_proc = CMC.P3_DL.cc.LRU_replacement_proc;
+assign g_intf.Cache_var[3]            = CMC.P4_DL.cb.Cache_var;
+ assign g_intf.Cache_proc_contr[3]     = CMC.P4_DL.cb.Cache_proc_contr;
+ assign g_intf.LRU_var[3]              = CMC.P4_DL.cc.LRU_var;
+ assign g_intf.LRU_replacement_proc[3] = CMC.P4_DL.LRU_replacement_proc;
 
- assign g_intf[3].Cache_var            = CMC.P4_DL.cb.Cache_var;
- assign g_intf[3].Cache_proc_contr     = CMC.P4_DL.cb.Cache_proc_contr;
- assign g_intf[3].LRU_var              = CMC.P4_DL.cc.LRU_var;
- assign g_intf[3].LRU_replacement_proc = CMC.P4_DL.cc.LRU_replacement_proc;
+assign g_intf.Cache_var[4]            = CMC.P5_DL.cb.Cache_var;
+ assign g_intf.Cache_proc_contr[4]     = CMC.P5_DL.cb.Cache_proc_contr;
+ assign g_intf.LRU_var[4]              = CMC.P5_DL.cc.LRU_var;
+ assign g_intf.LRU_replacement_proc[4] = CMC.P5_DL.LRU_replacement_proc;
 
- assign g_intf[4].Cache_var            = CMC.P5_DL.cb.Cache_var;
- assign g_intf[4].Cache_proc_contr     = CMC.P5_DL.cb.Cache_proc_contr;
- assign g_intf[4].LRU_var              = CMC.P5_DL.cc.LRU_var;
- assign g_intf[4].LRU_replacement_proc = CMC.P5_DL.cc.LRU_replacement_proc;
+assign g_intf.Cache_var[5]            = CMC.P6_DL.cb.Cache_var;
+ assign g_intf.Cache_proc_contr[5]     = CMC.P6_DL.cb.Cache_proc_contr;
+ assign g_intf.LRU_var[5]              = CMC.P6_DL.cc.LRU_var;
+ assign g_intf.LRU_replacement_proc[5] = CMC.P6_DL.LRU_replacement_proc;
 
+assign g_intf.Cache_var[6]            = CMC.P7_DL.cb.Cache_var;
+ assign g_intf.Cache_proc_contr[6]     = CMC.P7_DL.cb.Cache_proc_contr;
+ assign g_intf.LRU_var[6]              = CMC.P7_DL.cc.LRU_var;
+ assign g_intf.LRU_replacement_proc[6] = CMC.P7_DL.LRU_replacement_proc;
 
- assign g_intf[5].Cache_var            = CMC.P6_DL.cb.Cache_var;
- assign g_intf[5].Cache_proc_contr     = CMC.P6_DL.cb.Cache_proc_contr;
- assign g_intf[5].LRU_var              = CMC.P6_DL.cc.LRU_var;
- assign g_intf[5].LRU_replacement_proc = CMC.P6_DL.cc.LRU_replacement_proc;
-
- assign g_intf[6].Cache_var            = CMC.P7_DL.cb.Cache_var;
- assign g_intf[6].Cache_proc_contr     = CMC.P7_DL.cb.Cache_proc_contr;
- assign g_intf[6].LRU_var              = CMC.P7_DL.cc.LRU_var;
- assign g_intf[6].LRU_replacement_proc = CMC.P7_DL.cc.LRU_replacement_proc;
-
-
- assign g_intf[7].Cache_var            = CMC.P8_DL.cb.Cache_var;
- assign g_intf[7].Cache_proc_contr     = CMC.P8_DL.cb.Cache_proc_contr;
- assign g_intf[7].LRU_var              = CMC.P8_DL.cc.LRU_var;
- assign g_intf[7].LRU_replacement_proc = CMC.P8_DL.cc.LRU_replacement_proc;
+assign g_intf.Cache_var[7]            = CMC.P8_DL.cb.Cache_var;
+ assign g_intf.Cache_proc_contr[7]     = CMC.P8_DL.cb.Cache_proc_contr;
+ assign g_intf.LRU_var[7]              = CMC.P8_DL.cc.LRU_var;
+ assign g_intf.LRU_replacement_proc[7] = CMC.P8_DL.LRU_replacement_proc;
 
  always @(g_intf.clk) begin
-   g_intf[0].Updated_MESI_state_proc  = P1_DL.cb.Updated_MESI_state_proc; 
-   g_intf[0].Blk_access_proc          = P1_DL.cb.Blk_access_proc;
-   g_intf[0].Blk_access_snoop         = P1_DL.cb.Blk_access_snoop;
-   g_intf[0].Index_snoop              = P1_DL.cb.Index_snoop;
-   
-   g_intf[1].Updated_MESI_state_proc  = P2_DL.cb.Updated_MESI_state_proc; 
-   g_intf[1].Blk_access_proc          = P2_DL.cb.Blk_access_proc;
-   g_intf[1].Blk_access_snoop         = P2_DL.cb.Blk_access_snoop;
-   g_intf[1].Index_snoop              = P2_DL.cb.Index_snoop;
 
-   g_intf[2].Updated_MESI_state_proc  = P3_DL.cb.Updated_MESI_state_proc; 
-   g_intf[2].Blk_access_proc          = P3_DL.cb.Blk_access_proc;
-   g_intf[2].Blk_access_snoop         = P3_DL.cb.Blk_access_snoop;
-   g_intf[2].Index_snoop              = P3_DL.cb.Index_snoop;
+  g_intf.Updated_MESI_state_proc[0]  = P1_DL.cb.Updated_MESI_state_proc; 
+  g_intf.Blk_access_proc[0]          = P1_DL.cb.Blk_access_proc;
+  g_intf.Blk_access_snoop[0]         = P1_DL.cb.Blk_access_snoop;
+  g_intf.Index_snoop[0]              = P1_DL.cb.Index_snoop;
 
-   g_intf[3].Updated_MESI_state_proc  = P4_DL.cb.Updated_MESI_state_proc; 
-   g_intf[3].Blk_access_proc          = P4_DL.cb.Blk_access_proc;
-   g_intf[3].Blk_access_snoop         = P4_DL.cb.Blk_access_snoop;
-   g_intf[3].Index_snoop              = P4_DL.cb.Index_snoop;
+  g_intf.Updated_MESI_state_proc[1]  = P2_DL.cb.Updated_MESI_state_proc; 
+  g_intf.Blk_access_proc[1]          = P2_DL.cb.Blk_access_proc;
+  g_intf.Blk_access_snoop[1]         = P2_DL.cb.Blk_access_snoop;
+  g_intf.Index_snoop[1]              = P2_DL.cb.Index_snoop; 
 
-   g_intf[4].Updated_MESI_state_proc  = P5_DL.cb.Updated_MESI_state_proc; 
-   g_intf[4].Blk_access_proc          = P5_DL.cb.Blk_access_proc;
-   g_intf[4].Blk_access_snoop         = P5_DL.cb.Blk_access_snoop;
-   g_intf[4].Index_snoop              = P5_DL.cb.Index_snoop;
+  g_intf.Updated_MESI_state_proc[2]  = P3_DL.cb.Updated_MESI_state_proc; 
+  g_intf.Blk_access_proc[2]          = P3_DL.cb.Blk_access_proc;
+  g_intf.Blk_access_snoop[2]         = P3_DL.cb.Blk_access_snoop;
+  g_intf.Index_snoop[2]              = P3_DL.cb.Index_snoop;
 
-   g_intf[5].Updated_MESI_state_proc  = P6_DL.cb.Updated_MESI_state_proc; 
-   g_intf[5].Blk_access_proc          = P6_DL.cb.Blk_access_proc;
-   g_intf[5].Blk_access_snoop         = P6_DL.cb.Blk_access_snoop;
-   g_intf[5].Index_snoop              = P6_DL.cb.Index_snoop;
+  g_intf.Updated_MESI_state_proc[3]  = P4_DL.cb.Updated_MESI_state_proc; 
+  g_intf.Blk_access_proc[3]          = P4_DL.cb.Blk_access_proc;
+  g_intf.Blk_access_snoop[3]         = P4_DL.cb.Blk_access_snoop;
+  g_intf.Index_snoop[3]              = P4_DL.cb.Index_snoop;
 
-   g_intf[6].Updated_MESI_state_proc  = P7_DL.cb.Updated_MESI_state_proc; 
-   g_intf[6].Blk_access_proc          = P7_DL.cb.Blk_access_proc;
-   g_intf[6].Blk_access_snoop         = P7_DL.cb.Blk_access_snoop;
-   g_intf[6].Index_snoop              = P7_DL.cb.Index_snoop;
+  g_intf.Updated_MESI_state_proc[4]  = P5_DL.cb.Updated_MESI_state_proc; 
+  g_intf.Blk_access_proc[4]          = P5_DL.cb.Blk_access_proc;
+  g_intf.Blk_access_snoop[4]         = P5_DL.cb.Blk_access_snoop;
+  g_intf.Index_snoop[4]              = P5_DL.cb.Index_snoop;
 
-   g_intf[7].Updated_MESI_state_proc  = P8_DL.cb.Updated_MESI_state_proc; 
-   g_intf[7].Blk_access_proc          = P8_DL.cb.Blk_access_proc;
-   g_intf[7].Blk_access_snoop         = P8_DL.cb.Blk_access_snoop;
-   g_intf[7].Index_snoop              = P8_DL.cb.Index_snoop; 
-  
+  g_intf.Updated_MESI_state_proc[5]  = P6_DL.cb.Updated_MESI_state_proc; 
+  g_intf.Blk_access_proc[5]          = P6_DL.cb.Blk_access_proc;
+  g_intf.Blk_access_snoop[5]         = P6_DL.cb.Blk_access_snoop;
+  g_intf.Index_snoop[5]              = P6_DL.cb.Index_snoop;
+
+  g_intf.Updated_MESI_state_proc[6]  = P7_DL.cb.Updated_MESI_state_proc; 
+  g_intf.Blk_access_proc[6]          = P7_DL.cb.Blk_access_proc;
+  g_intf.Blk_access_snoop[6]         = P7_DL.cb.Blk_access_snoop;
+  g_intf.Index_snoop[6]              = P7_DL.cb.Index_snoop;
+
+  g_intf.Updated_MESI_state_proc[7]  = P8_DL.cb.Updated_MESI_state_proc; 
+  g_intf.Blk_access_proc[7]          = P8_DL.cb.Blk_access_proc;
+  g_intf.Blk_access_snoop[7]         = P8_DL.cb.Blk_access_snoop;
+  g_intf.Index_snoop[7]              = P8_DL.cb.Index_snoop;
+
  end
 //The port connections are made without the knowledge of the actual design. It is supposed to change later.
 cache_multi_config_1 CMC (
