@@ -7,7 +7,8 @@
 //include Design Files
 `include "cache_multi_config_1.v" //DUT design file 
 `include "arbiter.v"
-//`include "TestCases.sv"
+//`include "interfacesMultiCore.sv"
+`include "TestCasesMultiCore.sv"
 //define half clock period
 `define HALF_PERIOD 100
 
@@ -16,7 +17,7 @@ module top_C1();
 
  //Global interface containing all the signals that need to be
  //driven/monitored
- globalInterface g_intf [8](.clk(a.clk));
+ globalInterface g_intf (.clk(a.clk));
 
 
  //Virtual interface for global interface
@@ -62,7 +63,15 @@ assign g_intf.Cache_var[7]            = CMC.P8_DL.cb.Cache_var;
  assign g_intf.LRU_var[7]              = CMC.P8_DL.cc.LRU_var;
  assign g_intf.LRU_replacement_proc[7] = CMC.P8_DL.LRU_replacement_proc;
 
- always @(g_intf.clk) begin
+assign g_intf.Address_Com              = CMC.Address_Com;
+assign g_intf.Data_Bus_Com             = CMC.Data_Bus_Com;
+assign g_intf.BusRd                    = CMC.BusRd;
+assign g_intf.BusRdX                   = CMC.BusRdX;
+assign g_intf.Invalidate               = CMC.Invalidate;
+assign g_intf.Data_in_Bus              = CMC.Data_in_Bus;
+
+
+always @(g_intf.clk) begin
 
   g_intf.Updated_MESI_state_proc[0]  = P1_DL.cb.Updated_MESI_state_proc; 
   g_intf.Blk_access_proc[0]          = P1_DL.cb.Blk_access_proc;
@@ -105,79 +114,81 @@ assign g_intf.Cache_var[7]            = CMC.P8_DL.cb.Cache_var;
   g_intf.Index_snoop[7]              = P8_DL.cb.Index_snoop;
 
  end
+
+
 //The port connections are made without the knowledge of the actual design. It is supposed to change later.
 cache_multi_config_1 CMC (
                                                                 g_intf.clk,
-								g_intf[0].PrWr              ,
-								g_intf[0].PrRd              ,
-								g_intf[0].Address           ,
-								g_intf[0].Data_Bus          ,
-								g_intf[0].CPU_stall         ,
-								g_intf[0].Com_Bus_Req_proc_0,
-								g_intf[0].Com_Bus_Gnt_proc_0,
-								g_intf[0].Com_Bus_Req_snoo_0,
-								g_intf[0].Com_Bus_Gnt_snoop_0,
-								g_intf[1].PrWr              ,
-								g_intf[1].PrRd              ,
-								g_intf[1].Address           ,
-								g_intf[1].Data_Bus          ,
-								g_intf[1].CPU_stall         ,
-								g_intf[1].Com_Bus_Req_proc  ,
-								g_intf[1].Com_Bus_Gnt_proc  ,
-								g_intf[1].Com_Bus_Req_snoop ,
-								g_intf[1].Com_Bus_Gnt_snoop ,
-								g_intf[2].PrWr              ,
-								g_intf[2].PrRd              ,
-								g_intf[2].Address           ,
-								g_intf[2].Data_Bus          ,
-								g_intf[2].CPU_stall         ,
-								g_intf[2].Com_Bus_Req_proc  ,
-								g_intf[2].Com_Bus_Gnt_proc  ,
-								g_intf[2].Com_Bus_Req_snoop ,
-								g_intf[2].Com_Bus_Gnt_snoop ,
-								g_intf[3].PrWr              ,
-								g_intf[3].PrRd              ,
-								g_intf[3].Address           ,
-								g_intf[3].Data_Bus          ,
-								g_intf[3].CPU_stall         ,
-								g_intf[3].Com_Bus_Req_proc  ,
-								g_intf[3].Com_Bus_Gnt_proc  ,
-								g_intf[3].Com_Bus_Req_snoop ,
-								g_intf[3].Com_Bus_Gnt_snoop ,
-								g_intf[0].Address_Com,
-								g_intf[0].Data_Bus_Com,
-								g_intf[0].Data_in_Bus,
-								g_intf[0].Mem_wr,
-								g_intf[0].Mem_oprn_abort,
-								g_intf[0].Mem_write_done,
-								g_intf[4].PrWr              ,
-								g_intf[4].PrRd              ,
-								g_intf[4].Address           ,
-								g_intf[4].Data_Bus          ,
-								g_intf[4].CPU_stall         ,
-								g_intf[4].Com_Bus_Req_proc  ,
-								g_intf[4].Com_Bus_Gnt_proc  ,
-								g_intf[5].PrWr              ,
-								g_intf[5].PrRd              ,
-								g_intf[5].Address           ,
-								g_intf[5].Data_Bus          ,
-								g_intf[5].CPU_stall         ,
-								g_intf[5].Com_Bus_Req_proc  ,
-								g_intf[5].Com_Bus_Gnt_proc  ,
-								g_intf[6].PrWr              ,
-								g_intf[6].PrRd              ,
-								g_intf[6].Address           ,
-								g_intf[6].Data_Bus          ,
-								g_intf[6].CPU_stall         ,
-								g_intf[6].Com_Bus_Req_proc  ,
-								g_intf[6].Com_Bus_Gnt_proc  ,
-								g_intf[7].PrWr              ,
-								g_intf[7].PrRd              ,
-								g_intf[7].Address           ,
-								g_intf[7].Data_Bus          ,
-								g_intf[7].CPU_stall         ,
-								g_intf[7].Com_Bus_Req_proc  ,
-								g_intf[7].Com_Bus_Gnt_proc  
+								g_intf.PrWr[0]              ,
+								g_intf.PrRd[0]              ,
+								g_intf.Address[0]           ,
+								g_intf.Data_Bus[0]          ,
+								g_intf.CPU_stall[0]         ,
+								g_intf.Com_Bus_Req_proc_0,
+								g_intf.Com_Bus_Gnt_proc_0,
+								g_intf.Com_Bus_Req_snoop_0,
+								g_intf.Com_Bus_Gnt_snoop_0,
+								g_intf.PrWr[1]              ,
+								g_intf.PrRd[1]              ,
+								g_intf.Address[1]           ,
+								g_intf.Data_Bus[1]          ,
+								g_intf.CPU_stall[1]         ,
+								g_intf.Com_Bus_Req_proc_1  ,
+								g_intf.Com_Bus_Gnt_proc_1  ,
+								g_intf.Com_Bus_Req_snoop_1 ,
+								g_intf.Com_Bus_Gnt_snoop_1 ,
+								g_intf.PrWr[2]              ,
+								g_intf.PrRd[2]              ,
+								g_intf.Address[2]           ,
+								g_intf.Data_Bus[2]          ,
+								g_intf.CPU_stall[2]         ,
+								g_intf.Com_Bus_Req_proc_2  ,
+								g_intf.Com_Bus_Gnt_proc_2  ,
+								g_intf.Com_Bus_Req_snoop_2 ,
+								g_intf.Com_Bus_Gnt_snoop_2 ,
+								g_intf.PrWr[3]              ,
+								g_intf.PrRd[3]              ,
+								g_intf.Address[3]           ,
+								g_intf.Data_Bus[3]          ,
+								g_intf.CPU_stall[3]         ,
+								g_intf.Com_Bus_Req_proc_3  ,
+								g_intf.Com_Bus_Gnt_proc_3  ,
+								g_intf.Com_Bus_Req_snoop_3 ,
+								g_intf.Com_Bus_Gnt_snoop_3 ,
+								g_intf.Address_Com,
+								g_intf.Data_Bus_Com,
+								g_intf.Data_in_Bus,
+								g_intf.Mem_wr,
+								g_intf.Mem_oprn_abort,
+								g_intf.Mem_write_done,
+								g_intf.PrWr[4]              ,
+								g_intf.PrRd[4]              ,
+								g_intf.Address[4]           ,
+								g_intf.Data_Bus[4]          ,
+								g_intf.CPU_stall[4]         ,
+								g_intf.Com_Bus_Req_proc_4  ,
+								g_intf.Com_Bus_Gnt_proc_4  ,
+								g_intf.PrWr[5]              ,
+								g_intf.PrRd[5]              ,
+								g_intf.Address[5]           ,
+								g_intf.Data_Bus[5]          ,
+								g_intf.CPU_stall[5]         ,
+								g_intf.Com_Bus_Req_proc_5  ,
+								g_intf.Com_Bus_Gnt_proc_5  ,
+								g_intf.PrWr[6]              ,
+								g_intf.PrRd[6]              ,
+								g_intf.Address[6]           ,
+								g_intf.Data_Bus[6]          ,
+								g_intf.CPU_stall[6]         ,
+								g_intf.Com_Bus_Req_proc_6  ,
+								g_intf.Com_Bus_Gnt_proc_6  ,
+								g_intf.PrWr[7]              ,
+								g_intf.PrRd[7]              ,
+								g_intf.Address[7]           ,
+								g_intf.Data_Bus[7]          ,
+								g_intf.CPU_stall[7]         ,
+								g_intf.Com_Bus_Req_proc_7  ,
+								g_intf.Com_Bus_Gnt_proc_7  
 
 );
  
@@ -210,18 +221,18 @@ arbiter a (
 			g_intf.Mem_snoop_gnt
 );
 
-/*//Instantiate  Top level direct testcase object. Please consider that these
+//Instantiate  Top level direct testcase object. Please consider that these
 //test cases consider more than 1 scenario specified in Test Plan and As
 //commented in TestCases.sv file
 topReadMiss                     topReadMiss_inst;
-topReadHit                      topReadHit_inst;
+/*topReadHit                      topReadHit_inst;
 topWriteMiss                    topWriteMiss_inst;
 topWriteHit                     topWriteHit_inst;
 topReadMissReplaceModified      topReadMissReplaceModified_inst;
 topWriteMissModifiedReplacement topWriteMissModifiedReplacement_inst;
 topBusRdSnoop                   topBusRdSnoop_inst;
 topBusRdXSnoop                  topBusRdXSnoop_inst;
-topSnoopInvalidate              topSnoopInvalidate_inst;
+topSnoopInvalidate              topSnoopInvalidate_inst;*/
 reg[31:0] temp_addr;
 reg[31:0] temp_data;
 reg [7:0] test_no;
@@ -251,7 +262,7 @@ $display("************** STARTING TOP LEVEL TESTING ******************");
    #10;
    topReadMiss_inst.reset_DUT_inputs(local_intf); 
    #100;
-//top read hit
+/*//top read hit
    test_no            += 1;
    topReadHit_inst    = new();
    topReadHit_inst.randomize() with {Address == 32'hdeadbeef &&
@@ -404,7 +415,7 @@ $display("Testing Read Miss Scenario using topReadMiss test case when other Cach
    topSnoopInvalidate_inst.Max_Resp_Delay = 10;
    topSnoopInvalidate_inst.core           = 0;
    topSnoopInvalidate_inst.testInvalidation(local_intf);
-   #100;
+   #100;*/
    $finish;       
 
 
@@ -418,5 +429,5 @@ always @(posedge g_intf.clk)
 
    g_intf.check_UndefinedBehavior(0);
 
-*/
+
 endmodule

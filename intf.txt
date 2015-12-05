@@ -1,0 +1,40 @@
+assign g_intf.Cache_var[0]            = CMC.P1_DL.cb.Cache_var;
+ assign g_intf.Cache_proc_contr[0]     = CMC.P1_DL.cb.Cache_proc_contr;
+ assign g_intf.LRU_var[0]              = CMC.P1_DL.cc.LRU_var;
+ assign g_intf.LRU_replacement_proc[0] = CMC.P1_DL.LRU_replacement_proc;
+
+assign g_intf.Cache_var[1]            = CMC.P2_DL.cb.Cache_var;
+ assign g_intf.Cache_proc_contr[1]     = CMC.P2_DL.cb.Cache_proc_contr;
+ assign g_intf.LRU_var[1]              = CMC.P2_DL.cc.LRU_var;
+ assign g_intf.LRU_replacement_proc[1] = CMC.P2_DL.LRU_replacement_proc;
+
+assign g_intf.Cache_var[2]            = CMC.P3_DL.cb.Cache_var;
+ assign g_intf.Cache_proc_contr[2]     = CMC.P3_DL.cb.Cache_proc_contr;
+ assign g_intf.LRU_var[2]              = CMC.P3_DL.cc.LRU_var;
+ assign g_intf.LRU_replacement_proc[2] = CMC.P3_DL.LRU_replacement_proc;
+
+assign g_intf.Cache_var[3]            = CMC.P4_DL.cb.Cache_var;
+ assign g_intf.Cache_proc_contr[3]     = CMC.P4_DL.cb.Cache_proc_contr;
+ assign g_intf.LRU_var[3]              = CMC.P4_DL.cc.LRU_var;
+ assign g_intf.LRU_replacement_proc[3] = CMC.P4_DL.LRU_replacement_proc;
+
+assign g_intf.Cache_var[4]            = CMC.P5_DL.cb.Cache_var;
+ assign g_intf.Cache_proc_contr[4]     = CMC.P5_DL.cb.Cache_proc_contr;
+ assign g_intf.LRU_var[4]              = CMC.P5_DL.cc.LRU_var;
+ assign g_intf.LRU_replacement_proc[4] = CMC.P5_DL.LRU_replacement_proc;
+
+assign g_intf.Cache_var[5]            = CMC.P6_DL.cb.Cache_var;
+ assign g_intf.Cache_proc_contr[5]     = CMC.P6_DL.cb.Cache_proc_contr;
+ assign g_intf.LRU_var[5]              = CMC.P6_DL.cc.LRU_var;
+ assign g_intf.LRU_replacement_proc[5] = CMC.P6_DL.LRU_replacement_proc;
+
+assign g_intf.Cache_var[6]            = CMC.P7_DL.cb.Cache_var;
+ assign g_intf.Cache_proc_contr[6]     = CMC.P7_DL.cb.Cache_proc_contr;
+ assign g_intf.LRU_var[6]              = CMC.P7_DL.cc.LRU_var;
+ assign g_intf.LRU_replacement_proc[6] = CMC.P7_DL.LRU_replacement_proc;
+
+assign g_intf.Cache_var[7]            = CMC.P8_DL.cb.Cache_var;
+ assign g_intf.Cache_proc_contr[7]     = CMC.P8_DL.cb.Cache_proc_contr;
+ assign g_intf.LRU_var[7]              = CMC.P8_DL.cc.LRU_var;
+ assign g_intf.LRU_replacement_proc[7] = CMC.P8_DL.LRU_replacement_proc;
+

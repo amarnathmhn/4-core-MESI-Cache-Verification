@@ -7,8 +7,8 @@
 //include Design Files
 `include "cache_multi_config_1.v" //DUT design file 
 `include "arbiter.v"
-//`include "interfacesMultiCore.sv"
-`include "TestCasesMultiCore.sv"
+`include "interfacesMultiCore.sv"
+//`include "TestCases.sv"
 //define half clock period
 `define HALF_PERIOD 100
 
@@ -17,11 +17,11 @@ module top_C1();
 
  //Global interface containing all the signals that need to be
  //driven/monitored
- globalInterface #(.cores(4)) g_intf (.clk(a.clk));
+ globalInterface g_intf [8](.clk(a.clk));
 
 
  //Virtual interface for global interface
- virtual interface globalInterface #(.cores(4)) local_intf;
+ virtual interface globalInterface local_intf;
  //Connect internal registers of DUT to interface
 assign g_intf.Cache_var[0]            = CMC.P1_DL.cb.Cache_var;
  assign g_intf.Cache_proc_contr[0]     = CMC.P1_DL.cb.Cache_proc_contr;
@@ -69,9 +69,7 @@ assign g_intf.BusRd                    = CMC.BusRd;
 assign g_intf.BusRdX                   = CMC.BusRdX;
 assign g_intf.Invalidate               = CMC.Invalidate;
 assign g_intf.Data_in_Bus              = CMC.Data_in_Bus;
-
-
-always @(g_intf.clk) begin
+ always @(g_intf.clk) begin
 
   g_intf.Updated_MESI_state_proc[0]  = P1_DL.cb.Updated_MESI_state_proc; 
   g_intf.Blk_access_proc[0]          = P1_DL.cb.Blk_access_proc;
@@ -221,18 +219,18 @@ arbiter a (
 			g_intf.Mem_snoop_gnt
 );
 
-//Instantiate  Top level direct testcase object. Please consider that these
+/*//Instantiate  Top level direct testcase object. Please consider that these
 //test cases consider more than 1 scenario specified in Test Plan and As
 //commented in TestCases.sv file
 topReadMiss                     topReadMiss_inst;
-/*topReadHit                      topReadHit_inst;
+topReadHit                      topReadHit_inst;
 topWriteMiss                    topWriteMiss_inst;
 topWriteHit                     topWriteHit_inst;
 topReadMissReplaceModified      topReadMissReplaceModified_inst;
 topWriteMissModifiedReplacement topWriteMissModifiedReplacement_inst;
 topBusRdSnoop                   topBusRdSnoop_inst;
 topBusRdXSnoop                  topBusRdXSnoop_inst;
-topSnoopInvalidate              topSnoopInvalidate_inst;*/
+topSnoopInvalidate              topSnoopInvalidate_inst;
 reg[31:0] temp_addr;
 reg[31:0] temp_data;
 reg [7:0] test_no;
@@ -262,7 +260,7 @@ $display("************** STARTING TOP LEVEL TESTING ******************");
    #10;
    topReadMiss_inst.reset_DUT_inputs(local_intf); 
    #100;
-/*//top read hit
+//top read hit
    test_no            += 1;
    topReadHit_inst    = new();
    topReadHit_inst.randomize() with {Address == 32'hdeadbeef &&
@@ -415,7 +413,7 @@ $display("Testing Read Miss Scenario using topReadMiss test case when other Cach
    topSnoopInvalidate_inst.Max_Resp_Delay = 10;
    topSnoopInvalidate_inst.core           = 0;
    topSnoopInvalidate_inst.testInvalidation(local_intf);
-   #100;*/
+   #100;
    $finish;       
 
 
@@ -429,5 +427,5 @@ always @(posedge g_intf.clk)
 
    g_intf.check_UndefinedBehavior(0);
 
-
+*/
 endmodule

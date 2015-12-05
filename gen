@@ -1,0 +1,12 @@
+
+
+open(OUTF,'>intf.txt');
+
+my $indx = 0;
+while($indx <= 7) {
+   my $indx1 = $indx + 1;
+   print OUTF "g_intf[$indx].Updated_MESI_state_proc  = P$indx1_DL.cb.Updated_MESI_state_proc; 
+   g_intf[$indx].Blk_access_proc          = P$indx1_DL.cb.Blk_access_proc;
+   g_intf[$indx].Blk_access_snoop         = P$indx1_DL.cb.Blk_access_snoop;
+   g_intf[$indx].Index_snoop              = P$indx1_DL.cb.Index_snoop;"
+}
