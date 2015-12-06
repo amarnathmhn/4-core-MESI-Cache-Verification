@@ -130,7 +130,7 @@ reg                                     BusRdX_reg;
 reg                                     Mem_wr_reg;
 reg                                     Mem_oprn_abort_reg;
 reg                                     Data_in_Bus_reg;
-//reg                                     Invalidation_done_reg;
+reg                                     Invalidation_done_reg;
 reg                                     Invalidate_reg;
 reg					Shared;
 
@@ -807,7 +807,7 @@ Shared 			= 1'b0;
 					end
 				endcase
 			end
-			/*	// If snoop request is for invalidation
+				// If snoop request is for invalidation
 				else if (Invalidate)
 				begin
 					// Block is invalidated and Invalidation_done signal is asserted
@@ -815,7 +815,7 @@ Shared 			= 1'b0;
 					Cache_proc_contr[{Index_snoop,Blk_access_snoop}][`CACHE_MESI_MSB:`CACHE_MESI_LSB] 	= INVALID;
 					Invalidation_done_reg 									= 1'b1;            
 					Com_Bus_Req_snoop 									= 1'b0;
-				end*/
+				end
 		end
 			//Com_Bus_Req_snoop = 1'b0;
 	end

@@ -247,7 +247,7 @@ initial
    #20;
  local_intf         = g_intf;
 //Repeat the following tests for all cores using core variable in each testcase. For example core = 0 will test the cache in core 0 while checking the behavior of all other caches in the multi core environment
-$display("Core 1 testing started");
+/*$display("Core 1 testing started");
 $display("************** STARTING TOP LEVEL TESTING ******************"); 
 $display("************** TEST NO 1 ******************");
   
@@ -296,7 +296,7 @@ $display("************** TEST NO 1 ******************");
    $display("SVDEBUG::MESI State of Block with Address %x is %s in Core 0 after snoop",temp_addr,mesiStateType'(CMC.P1_DL.cb.Cache_proc_contr[{temp_addr[`INDEX_MSB:`INDEX_LSB],CMC.P1_DL.cb.Blk_access_proc}][`CACHE_MESI_MSB:`CACHE_MESI_LSB]));
    topReadMissSnoopHit_inst.reset_DUT_inputs(local_intf);  
    #100;*/
-$display("************* TEST NO 3 : PrRd miss in Core 0 while core 1 contains block in M state *****************");
+$display("************* TEST NO 3 : PrRd miss in Core 1 while core 0 contains block in M state *****************");
 //Change the state to M
 //test_no            += 1;
   // CMC.P2_DL.cb.Cache_proc_contr[{temp_addr[`INDEX_MSB:`INDEX_LSB],tmp_blk_access}][`CACHE_MESI_MSB:`CACHE_MESI_LSB] = 2'b11;
@@ -482,7 +482,7 @@ $display("Testing Read Miss Scenario using topReadMiss test case when other Cach
    topSnoopInvalidate_inst.Address        = {16'd100,14'd1,2'b00};
    topSnoopInvalidate_inst.Max_Resp_Delay = 10;
    topSnoopInvalidate_inst.core           = 0;
-   topSnoopInvalidate_inst.testInvalidation(local_intf); */
+   topSnoopInvalidate_inst.testInvalidation(local_intf); */*/
    #100;
    $display("LRU Value from the test bench is %b",CMC.P2_DL.cc.LRU_var[temp_addr[`INDEX_MSB:`INDEX_LSB]]);
    $finish;       

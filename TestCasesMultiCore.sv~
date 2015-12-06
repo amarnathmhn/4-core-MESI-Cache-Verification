@@ -8,6 +8,7 @@
 `include "interfacesMultiCore.sv"
 //enum type for MESI States
 typedef enum bit[1:0] {INVALID, SHARED, EXCLUSIVE, MODIFIED} mesiStateType;
+typedef enum bit {PrRd,PrWr} commandType;
 //Define a base class that contains repeatedly used waiting tasks and fields.
 class baseTestClass;
    
@@ -605,6 +606,7 @@ class topReadMissSnoopHit extends baseTestClass;
     //Wait until cache places Address in Address_Com bus
     check_Address_Com_load(sintf,core);
     //wait until lower memory or other cache places the data and asserts data_in_bus signal
+    $display("Waiting for Data_in_bus");
     wait(sintf.Data_in_Bus == 1);
     //Check if MESI State is properly assigned to block corresponding to the Address given
     if(sintf.Shared == 1)  
@@ -641,7 +643,7 @@ class topReadMissSnoopHit extends baseTestClass;
   //   Creates the simple Read stimulus and drives it to the DUT and checks for the behavior. Take the single Top Level Cache interface as input.
    task testSimpleReadMissWithSnoopHit(virtual globalInterface sintf);
       
-     $display("\n****** Test topReadMissSnoopHit Started ****** "); 
+     $display("\n****** Test topReadMissSnoopHit Started for core = %d ****** ",core); 
      
       drive(sintf); 
       check(sintf);
@@ -1110,33 +1112,87 @@ class topBusRdXSnoop extends baseTestClass;
 	 end
 	endtask
 endclass : topBusRdXSnoop
+//A master class that generates all scenarios in HAS3.0 Appendix
+class topLocal_NonLocalCoreTest extends baseTestClass;
 
-/*class topSnoopInvalidate extends baseTestClass;
-   //Task to send Invalidate signal to the DUT
-   task testInvalidation(virtual globalInterface sintf);
-   $display("\n****** TEST topSnoopInvalidate Started ******\n");
-         sintf.Address_Com_reg = Address;
-	 sintf.ClkBlk.PrRd[core]     <= 0;
-         sintf.ClkBlk.PrWr[core]     <= 0;
-         //sintf.ClkBlk.Invalidate <= 1;    
-   //Check if block with the Address is Invalidated 
-   repeat(Max_Resp_Delay) @(posedge sintf.clk);
-   delay = 0;
-   fork
-     wait(sintf.Cache_proc_contr[core][{sintf.Index_snoop[core],sintf.Blk_access_snoop}][`CACHE_MESI_MSB:`CACHE_MESI_LSB] == INVALID);
+  reg [3:0] local_cache;  //local core number
+  reg [3:0] other_cache;  //other core number
+  reg [3:0] tmp_cache;
+  reg [31:0] temp_addr;
+  commandType operation;   //PrRd or PrWr
+  mesiStateType blockStateOtherCache; //Block state in other cache
+  topReadMiss   topReadMiss_inst; //class to create ReadMiss 
+  topWriteMiss  topWriteMiss_inst; //class to create WriteMiss 
+  topReadHit    topReadHit_inst; //class to create ReadHit
+  topWriteHit   topWriteHit_inst;//class to create topWriteHit
+  
+ 
+  //This task will create the desired state of the block in other_cache
+  task createOtherCacheBlockState(virtual interface globalInterface sintf);
      begin
-       repeat(Max_Resp_Delay) @(posedge sintf.clk);
+     $display("Attemptig to create %s state for block with Address %x in Cache %",blockStateOtherCache,Address,other_cache);
+         if(blockStateOtherCache == INVALID) begin
+             //Do nothing. :)
+         end
+         else if (blockStateOtherCache == EXCLUSIVE) begin
+          //Do a Read Miss in other_cache
+             topReadMiss_inst                  = new();  
+             topReadMiss_inst.Address          = Address ;
+             topReadMiss_inst.Max_Resp_Delay   = Max_Resp_Delay;
+             topReadMiss_inst.core             = other_cache;
+             temp_addr                         = topReadMiss_inst.Address;
+             topReadMiss_inst.testSimpleReadMiss(sintf);
+             repeat(Max_Resp_Delay) @sintf.clk;
+             topReadMiss_inst.reset_DUT_inputs(local_intf);  
+             repeat(Max_Resp_Delay) @sintf.clk;
+         end
+         else if (blockStateOtherCache == MODIFIED) begin
+           //Do a Write Miss in other_cache
+             topWriteMiss_inst  = new();           
+             topWriteMiss_inst.Address         = Address;
+             topWriteMiss_inst.Max_Resp_Delay  = Max_Resp_Delay;
+             topWriteMiss_inst.core            = other_cache;
+             topWriteMiss_inst.wrData          = 32'hbabababa; 
+             topWriteMiss_inst.testWriteMiss(sintf);
+             #100;
+             topWriteMiss_inst.reset_DUT_inputs(sintf); 
+             #100;
+         end
+         else if (blockStateOtherCache == SHARED) begin
+             //Do read Miss on the other core
+             topReadMiss_inst                  = new();  
+             topReadMiss_inst.Address          = Address ;
+             topReadMiss_inst.Max_Resp_Delay   = Max_Resp_Delay;
+             topReadMiss_inst.core             = other_cache;
+             temp_addr                         = topReadMiss_inst.Address;
+             topReadMiss_inst.testSimpleReadMiss(sintf);
+             repeat(Max_Resp_Delay) @sintf.clk;
+             topReadMiss_inst.reset_DUT_inputs(sintf);  
+             repeat(Max_Resp_Delay) @sintf.clk;
+             //Do read Miss on some core other than the other_core and local_core
+             tmp_cache  = 3 - (other_cache + local_cache);
+             if (tmp_cache == 3) tmp_cache = 1;
+             //Do read Miss on tmp_cache
+             topReadMiss_inst                  = new();  
+             topReadMiss_inst.Address          = Address ;
+             topReadMiss_inst.Max_Resp_Delay   = Max_Resp_Delay;
+             topReadMiss_inst.core             = tmp_cache;
+             temp_addr                         = topReadMiss_inst.Address;
+             topReadMiss_inst.testSimpleReadMiss(sintf);
+             repeat(Max_Resp_Delay) @sintf.clk;
+             topReadMiss_inst.reset_DUT_inputs(sintf);  
+             repeat(Max_Resp_Delay) @sintf.clk;
+         end
+          
      end
-   join_any
-   disable fork;
-   assert(sintf.Cache_proc_contr[core][{sintf.Index_snoop[core],sintf.Blk_access_snoop}][`CACHE_MESI_MSB:`CACHE_MESI_LSB] == INVALID) $display("SUCCESS:Invalidation is done" );
-   else begin $display("BUG:: Invalidation Not Done upon snooping Invalidate");
-     status = "FAILED";
-   end
-    
-    $display("\n****** Test topSnoopInvalidate Done Status = %s ******\n",!sintf.failed?status:"FAILED"); 
-   endtask : testInvalidation 
-endclass */
+  endtask :  createOtherCacheBlockState
+  task testLocal_NonLocalCore(virtual interface globalInterface sintf);
+     begin
+       createOtherCacheBlockState(sintf);
+     end
+  endtask : testLocal_NonLocalCore
+
+endclass : topLocal_NonLocalCoreTest
 
 
 
