@@ -28,7 +28,7 @@ end
  virtual interface globalInterface local_intf;
  //Connect internal registers of DUT to interface
 assign g_intf.Cache_var[0]            = CMC.P1_DL.cb.Cache_var;
- assign g_intf.Cache_proc_contr[0]     = CMC.P1_DL.cb.Cache_proc_contr;
+ assign g_intf.Cache_proc_contr[0]    = CMC.P1_DL.cb.Cache_proc_contr;
  assign g_intf.LRU_var[0]              = CMC.P1_DL.cc.LRU_var;
  assign g_intf.LRU_replacement_proc[0] = CMC.P1_DL.LRU_replacement_proc;
 
@@ -204,19 +204,41 @@ reg[31:0] temp_data;
 reg [7:0] test_no;
 reg tmp_blk_access;
 
+reg [3:0] other_cache;
+reg [3:0] local_cache;
+commandType local_operation;
+mesiStateType blockStateOtherCache;
+mesiStateType mst;
+reg [31:0] Address;
+reg [2:0] line;
 initial
  begin
  #20;
  local_intf         = g_intf;
+ 
+ other_cache = 1;
+ local_cache = 0;
+ local_operation = PrRd;
+ blockStateOtherCache = EXCLUSIVE;
+ Address     = 32'hDEADBEEF;
  topLocal_NonLocalCoreTest_inst                      = new();
  topLocal_NonLocalCoreTest_inst.Max_Resp_Delay       = 10;
- topLocal_NonLocalCoreTest_inst.local_cache          = 1;
- topLocal_NonLocalCoreTest_inst.other_cache          = 0;
- topLocal_NonLocalCoreTest_inst.operation            = PrRd;
- topLocal_NonLocalCoreTest_inst.Address              = 32'hDEADBEEF;
- topLocal_NonLocalCoreTest_inst.blockStateOtherCache = SHARED;
+ topLocal_NonLocalCoreTest_inst.local_cache          = local_cache;
+ topLocal_NonLocalCoreTest_inst.other_cache          = other_cache;
+ topLocal_NonLocalCoreTest_inst.operation            = local_operation;
+ topLocal_NonLocalCoreTest_inst.Address              = Address;
+ topLocal_NonLocalCoreTest_inst.blockStateOtherCache = blockStateOtherCache;
  topLocal_NonLocalCoreTest_inst.testLocal_NonLocalCore(local_intf);
-  
+ //topLocal_NonLocalCoreTest_inst.createOtherCacheBlockState(local_intf);
+ 
+ for (line=2'b00; line <= 2'b11; line++) begin
+       mst = mesiStateType'(CMC.P1_DL.cb.Cache_proc_contr[{Address[`INDEX_MSB:`INDEX_LSB],line}][`CACHE_MESI_MSB:`CACHE_MESI_LSB]);
+       $display("mst for line %d is %s in core 0",line,mesiStateType'(mst));
+ end 
+ for (line=2'b00; line <= 2'b11; line++) begin
+       mst =mesiStateType'( CMC.P2_DL.cb.Cache_proc_contr[{Address[`INDEX_MSB:`INDEX_LSB],line}][`CACHE_MESI_MSB:`CACHE_MESI_LSB]);
+       $display("mst for line %d is %s in core 1",line,mesiStateType'(mst));
+ end 
  
  #100;
  $finish;       
