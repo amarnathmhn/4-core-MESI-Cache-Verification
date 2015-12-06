@@ -210,11 +210,11 @@ initial
  local_intf         = g_intf;
  topLocal_NonLocalCoreTest_inst                      = new();
  topLocal_NonLocalCoreTest_inst.Max_Resp_Delay       = 10;
- topLocal_NonLocalCoreTest_inst.local_cache          = 1;
- topLocal_NonLocalCoreTest_inst.other_cache          = 0;
+ topLocal_NonLocalCoreTest_inst.local_cache          = 0;
+ topLocal_NonLocalCoreTest_inst.other_cache          = 1;
  topLocal_NonLocalCoreTest_inst.operation            = PrRd;
  topLocal_NonLocalCoreTest_inst.Address              = 32'hDEADBEEF;
- topLocal_NonLocalCoreTest_inst.blockStateOtherCache = SHARED;
+ topLocal_NonLocalCoreTest_inst.blockStateOtherCache = EXCLUSIVE;
  topLocal_NonLocalCoreTest_inst.testLocal_NonLocalCore(local_intf);
   
  

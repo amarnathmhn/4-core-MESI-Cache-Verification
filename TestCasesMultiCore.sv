@@ -27,7 +27,7 @@ class baseTestClass;
    int delay;
    reg [2:0] expected_lru_var;
    reg [1:0] expected_line_to_replace;
-   
+   mesiStateType mesiStates[0:2*`CORES-1]; 
    
    //Task to wait and check for Com_Bus_Req_proc_0 and CPU_Stall to be asserted
    virtual task check_ComBusReqproc_CPUStall_assert(virtual interface globalInterface sintf,input [3:0] core);
@@ -392,6 +392,7 @@ mesiStateType expectedMesiState,input [3:0] core);
         break;
      end
      mst = mesiStateType'(sintf.Updated_MESI_state_proc[core]);
+     mesiStates[core] = mst;
     assert(sintf.Updated_MESI_state_proc[core] == expectedMesiState) $display("SUCCESS:: Next MESI State consistent with Expected MESI State: Expected = %s, Actual = %s",expectedMesiState.name(),mst.name());
     else begin $display("BUG:: Next MESI State does not match with expected next MESI state: Expected = %s, Actual = %s",expectedMesiState.name(),mst.name());
      status = "FAILED";
@@ -802,8 +803,8 @@ class topLocal_NonLocalCoreTest extends baseTestClass;
              topReadMiss_inst.core             = other_cache;
              temp_addr                         = topReadMiss_inst.Address;
              topReadMiss_inst.testSimpleReadMiss(sintf);
-             if(sintf.Updated_MESI_state_proc[core] == blockStateOtherCache)
-                   $display("Successfully Created %s state for block with Address %x in Cache %d",blockStateOtherCache,Address,other_cache);
+             if(mesiStates[other_cache] == blockStateOtherCache)
+               $display("Successfully Created %s state for block with Address %x in Cache %d",blockStateOtherCache,Address,other_cache);
              else $display("Attempt UnSuccessful");
              repeat(Max_Resp_Delay) @sintf.clk;
              topReadMiss_inst.reset_DUT_inputs(sintf);  
@@ -819,7 +820,7 @@ class topLocal_NonLocalCoreTest extends baseTestClass;
              topWriteMiss_inst.wrData          = 32'hbabababa; 
              topWriteMiss_inst.testWriteMiss(sintf);
              if(sintf.Updated_MESI_state_proc[core] == blockStateOtherCache)
-                   $display("Successfully Created %s state for block with Address %x in Cache %d",blockStateOtherCache,Address,other_cache);
+               $display("Successfully Created %s state for block with Address %x in Cache %d",blockStateOtherCache,Address,other_cache);
              else $display("Attempt UnSuccessful");
              #100;
              topWriteMiss_inst.reset_DUT_inputs(sintf); 
@@ -904,20 +905,89 @@ class topLocal_NonLocalCoreTest extends baseTestClass;
                 if(blockStateOtherCache == SHARED) begin
                   check_Shared_assert(sintf);
                   check_DataInBus_assert(sintf);
-                  check_DataBusCom_valid(sintf,topReadMiss_inst.DataWrittenByMem);
+                  //check_DataBusCom_valid(sintf,topReadMiss_inst.DataWrittenByMem);
                 end
                 else if (blockStateOtherCache == EXCLUSIVE) begin
-                  
+                  check_Shared_assert(sintf);
+                  check_DataInBus_assert(sintf);
+                  //check_DataBusCom_valid(sintf,topReadMiss_inst.DataWrittenByMem);
+                  if(sintf.Updated_MESI_state_snoop[other_cache] == SHARED) begin
+                     $display("SUCCESS:: State of block with Address %x is changed to SHARED in other core %d",Address,other_cache);
+                  end
+                  else $display("BUG:: State of block with Address %x is changed to %s instead of SHARED in other core %d",Address,mesiStateType'(sintf.Updated_MESI_state_snoop[other_cache]),other_cache); 
+                  if(sintf.Updated_MESI_state_proc[local_cache] == SHARED) begin
+                     $display("SUCCESS:: State of block with Address %x is changed to SHARED in local core %d",Address,local_cache);
+                  end
+                  else $display("BUG:: State of block with Address %x is changed to %s instead of SHARED in local core %d",Address,mesiStateType'(sintf.Updated_MESI_state_snoop[local_cache]),local_cache); 
+                end
+                else if (blockStateOtherCache == MODIFIED) begin
+                     
+                   check_MemWr_assert(sintf);
+                   wait(sintf.Mem_write_done);
+                   check_Shared_assert(sintf);
+                   check_DataInBus_assert(sintf);
+                  if(sintf.Updated_MESI_state_snoop[other_cache] == SHARED) begin
+                     $display("SUCCESS:: State of block with Address %x is changed to SHARED in other core %d",Address,other_cache);
+                  end 
+                  else $display("BUG:: State of block with Address %x is changed to %s instead of SHARED in other core %d",Address,mesiStateType'(sintf.Updated_MESI_state_snoop[other_cache]),other_cache); 
+                  if(sintf.Updated_MESI_state_proc[local_cache] == SHARED) begin
+                     $display("SUCCESS:: State of block with Address %x is changed to SHARED in local core %d",Address,local_cache);
+                  end
+                  else $display("BUG:: State of block with Address %x is changed to %s instead of SHARED in local core %d",Address,mesiStateType'(sintf.Updated_MESI_state_snoop[local_cache]),local_cache); 
+                   
                 end
              end
         end
         else if (operation == PrWr) begin
              //Do a Write Miss in other_cache
-             topWriteMiss_inst  = new();           
-             topWriteMiss_inst.Address         = Address;
-             topWriteMiss_inst.Max_Resp_Delay  = Max_Resp_Delay;
-             topWriteMiss_inst.core            = local_cache;
-             topWriteMiss_inst.wrData          = 32'hbabababa; 
+             sintf.ClkBlk.Address[local_cache]        <= Address ;
+             sintf.ClkBlk.PrRd[local_cache]           <= 0;
+             sintf.ClkBlk.PrWr[local_cache]           <= 1;
+             sintf.Data_Bus_reg[local_cache]  = 32'hdadadada;
+             //wait for CPU_stall and Com_Bus_Gnt_proc to be made high
+             check_ComBusReqproc_CPUStall_assert(sintf,local_cache);
+             check_ComBusGntproc_assert(sintf,local_cache);
+             check_BusRdX_assert(sintf,local_cache);
+             check_Address_Com_load(sintf,local_cache);
+             if(blockStateOtherCache == SHARED) begin
+               check_Shared_assert(sintf);
+                if(sintf.Updated_MESI_state_snoop[other_cache] == INVALID) begin
+                  $display("SUCCESS:: State of block with Address %x is changed to INVALID in other core %d",Address,other_cache);
+                end
+                else $display("BUG:: State of block with Address %x is changed to %s instead of INVALID in other core %d",Address,mesiStateType'(sintf.Updated_MESI_state_snoop[other_cache]),other_cache); 
+                if(sintf.Updated_MESI_state_proc[local_cache] == MODIFIED) begin
+                  $display("SUCCESS:: State of block with Address %x is changed to MODIFIED in local core %d",Address,local_cache);
+               end
+               else $display("BUG:: State of block with Address %x is changed to %s instead of MODIFIED in local core %d",Address,mesiStateType'(sintf.Updated_MESI_state_snoop[local_cache]),local_cache); 
+             end
+             else if (blockStateOtherCache == EXCLUSIVE) begin
+               if(sintf.Updated_MESI_state_snoop[other_cache] == INVALID) begin
+                  $display("SUCCESS:: State of block with Address %x is changed to INVALID in other  core %d",Address,other_cache);
+               end
+               else $display("BUG:: State of block with Address %x is changed to %s instead of INVALID in other core %d",Address,mesiStateType'(sintf.Updated_MESI_state_snoop[other_cache]),other_cache); 
+               if(sintf.Updated_MESI_state_proc[local_cache] == MODIFIED) begin
+                  $display("SUCCESS:: State of block with Address %x is changed to MODIFIED in local core %d",Address,local_cache);
+               end
+               else $display("BUG:: State of block with Address %x is changed to %s instead of MODIFIED in local core %d",Address,mesiStateType'(sintf.Updated_MESI_state_snoop[local_cache]),local_cache); 
+             end
+             else if (blockStateOtherCache == MODIFIED) begin
+                check_ComBusReqSnoop_assert(sintf,other_cache);
+                wait(sintf.Com_Bus_Gnt_snoop[other_cache]);
+                check_MemWr_assert(sintf);
+                wait(sintf.Mem_write_done);
+                sintf.ClkBlk.Data_Bus_Com <= 32'hdeadcafe;
+                check_DataInBus_assert(sintf);
+               if(sintf.Updated_MESI_state_snoop[other_cache] == INVALID) begin
+                  $display("SUCCESS:: State of block with Address %x is changed to INVALID in other core %d",Address,other_cache);
+               end 
+               else $display("BUG:: State of block with Address %x is changed to %s instead of INVALID in other core %d",Address,mesiStateType'(sintf.Updated_MESI_state_snoop[other_cache]),other_cache); 
+               if(sintf.Updated_MESI_state_proc[local_cache] == MODIFIED) begin
+                  $display("SUCCESS:: State of block with Address %x is changed to MODIFIED in local core %d",Address,local_cache);
+               end
+               else $display("BUG:: State of block with Address %x is changed to %s instead of MODIFIED in local core %d",Address,mesiStateType'(sintf.Updated_MESI_state_snoop[local_cache]),local_cache); 
+                
+             end
+             
              //topWriteMiss_inst.(sintf);
              #100;
         end

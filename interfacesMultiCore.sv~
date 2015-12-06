@@ -62,8 +62,8 @@ interface globalInterface (input logic clk);
    logic [`CACHE_DATA_SIZE-1 : 0]    Cache_var[2*`CORES][0 : `CACHE_DEPTH-1];
    logic [`CACHE_TAG_MESI_SIZE-1  : 0] Cache_proc_contr[`CORES][0 : `CACHE_DEPTH-1];
    logic [`CACHE_TAG_VALID_SIZE-1 : 0] Cache_proc_contr_IL[`CORES][0 : `CACHE_DEPTH-1];
-   logic [1:0] Blk_access_proc[`CORES-1:0];
-   logic [1:0] Blk_access_snoop[`CORES-1:0];
+   logic [1:0] Blk_access_proc[2*`CORES-1:0];
+   logic [1:0] Blk_access_snoop[2*`CORES-1:0];
 
    logic [`LRU_SIZE-1 : 0]	LRU_var	[`CORES][0:`NUM_OF_SETS-1];
 

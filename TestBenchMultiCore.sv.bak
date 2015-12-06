@@ -73,49 +73,49 @@ assign g_intf.Invalidate               = CMC.Invalidate;
 assign g_intf.Shared                   = CMC.Shared;
 
 
-always @(g_intf.clk) begin
+//always @(g_intf.clk) begin
 
-  g_intf.Updated_MESI_state_proc[0]  = CMC.P1_DL.cb.Updated_MESI_state_proc; 
-  g_intf.Blk_access_proc[0]          = CMC.P1_DL.cb.Blk_access_proc;
-  g_intf.Blk_access_snoop[0]         = CMC.P1_DL.cb.Blk_access_snoop;
-  g_intf.Index_snoop[0]              = CMC.P1_DL.cb.Index_snoop;
+ assign g_intf.Updated_MESI_state_proc[0]  = CMC.P1_DL.cb.Updated_MESI_state_proc; 
+ assign g_intf.Blk_access_proc[0]          = CMC.P1_DL.cb.Blk_access_proc;
+ assign g_intf.Blk_access_snoop[0]         = CMC.P1_DL.cb.Blk_access_snoop;
+ assign g_intf.Index_snoop[0]              = CMC.P1_DL.cb.Index_snoop;
 
-  g_intf.Updated_MESI_state_proc[1]  = CMC.P2_DL.cb.Updated_MESI_state_proc; 
-  g_intf.Blk_access_proc[1]          = CMC.P2_DL.cb.Blk_access_proc;
-  g_intf.Blk_access_snoop[1]         = CMC.P2_DL.cb.Blk_access_snoop;
-  g_intf.Index_snoop[1]              = CMC.P2_DL.cb.Index_snoop; 
+ assign g_intf.Updated_MESI_state_proc[1]  = CMC.P2_DL.cb.Updated_MESI_state_proc; 
+ assign g_intf.Blk_access_proc[1]          = CMC.P2_DL.cb.Blk_access_proc;
+ assign g_intf.Blk_access_snoop[1]         = CMC.P2_DL.cb.Blk_access_snoop;
+ assign g_intf.Index_snoop[1]              = CMC.P2_DL.cb.Index_snoop; 
 
-  g_intf.Updated_MESI_state_proc[2]  = CMC.P3_DL.cb.Updated_MESI_state_proc; 
-  g_intf.Blk_access_proc[2]          = CMC.P3_DL.cb.Blk_access_proc;
-  g_intf.Blk_access_snoop[2]         = CMC.P3_DL.cb.Blk_access_snoop;
-  g_intf.Index_snoop[2]              = CMC.P3_DL.cb.Index_snoop;
+ assign g_intf.Updated_MESI_state_proc[2]  = CMC.P3_DL.cb.Updated_MESI_state_proc; 
+ assign g_intf.Blk_access_proc[2]          = CMC.P3_DL.cb.Blk_access_proc;
+ assign g_intf.Blk_access_snoop[2]         = CMC.P3_DL.cb.Blk_access_snoop;
+ assign g_intf.Index_snoop[2]              = CMC.P3_DL.cb.Index_snoop;
 
-  g_intf.Updated_MESI_state_proc[3]  = CMC.P4_DL.cb.Updated_MESI_state_proc; 
-  g_intf.Blk_access_proc[3]          = CMC.P4_DL.cb.Blk_access_proc;
-  g_intf.Blk_access_snoop[3]         = CMC.P4_DL.cb.Blk_access_snoop;
-  g_intf.Index_snoop[3]              = CMC.P4_DL.cb.Index_snoop;
+ assign g_intf.Updated_MESI_state_proc[3]  = CMC.P4_DL.cb.Updated_MESI_state_proc; 
+ assign g_intf.Blk_access_proc[3]          = CMC.P4_DL.cb.Blk_access_proc;
+ assign g_intf.Blk_access_snoop[3]         = CMC.P4_DL.cb.Blk_access_snoop;
+ assign g_intf.Index_snoop[3]              = CMC.P4_DL.cb.Index_snoop;
 
   //g_intf.Updated_MESI_state_proc[4]  = CMC.P1_IL.cb.Updated_MESI_state_proc; 
-  g_intf.Blk_access_proc[4]          = CMC.P1_IL.cb.Blk_access_proc;
+ assign g_intf.Blk_access_proc[4]          = CMC.P1_IL.cb.Blk_access_proc;
   //g_intf.Blk_access_snoop[4]         = CMC.P1_IL.cb.Blk_access_snoop;
   //g_intf.Index_snoop[4]              = CMC.P1_IL.cb.Index_snoop;
 
   //g_intf.Updated_MESI_state_proc[5]  = CMC.P2_IL.cb.Updated_MESI_state_proc; 
-  g_intf.Blk_access_proc[5]          = CMC.P2_IL.cb.Blk_access_proc;
+ assign g_intf.Blk_access_proc[5]          = CMC.P2_IL.cb.Blk_access_proc;
   //g_intf.Blk_access_snoop[5]         = CMC.P2_IL.cb.Blk_access_snoop;
   //g_intf.Index_snoop[5]              = CMC.P2_IL.cb.Index_snoop;
 
   //g_intf.Updated_MESI_state_proc[6]  = CMC.P3_IL.cb.Updated_MESI_state_proc; 
-  g_intf.Blk_access_proc[6]          = CMC.P3_IL.cb.Blk_access_proc;
+ assign  g_intf.Blk_access_proc[6]          = CMC.P3_IL.cb.Blk_access_proc;
   //g_intf.Blk_access_snoop[6]         = CMC.P3_IL.cb.Blk_access_snoop;
   //g_intf.Index_snoop[6]              = CMC.P3_IL.cb.Index_snoop;
 
   //g_intf.Updated_MESI_state_proc[7]  = CMC.P4_IL.cb.Updated_MESI_state_proc; 
-  g_intf.Blk_access_proc[7]          = CMC.P4_IL.cb.Blk_access_proc;
+ assign g_intf.Blk_access_proc[7]          = CMC.P4_IL.cb.Blk_access_proc;
   //g_intf.Blk_access_snoop[7]         = CMC.P4_IL.cb.Blk_access_snoop;
   //g_intf.Index_snoop[7]              = CMC.P4_IL.cb.Index_snoop;
 
- end
+// end
 
 
 //The port connections are made without the knowledge of the actual design. It is supposed to change later.
@@ -211,10 +211,10 @@ initial
  topLocal_NonLocalCoreTest_inst                      = new();
  topLocal_NonLocalCoreTest_inst.Max_Resp_Delay       = 10;
  topLocal_NonLocalCoreTest_inst.local_cache          = 1;
- topLocal_NonLocalCoreTest_inst.other_cache          = 1;
+ topLocal_NonLocalCoreTest_inst.other_cache          = 0;
  topLocal_NonLocalCoreTest_inst.operation            = PrRd;
  topLocal_NonLocalCoreTest_inst.Address              = 32'hDEADBEEF;
- topLocal_NonLocalCoreTest_inst.blockStateOtherCache = EXCLUSIVE;
+ topLocal_NonLocalCoreTest_inst.blockStateOtherCache = SHARED;
  topLocal_NonLocalCoreTest_inst.testLocal_NonLocalCore(local_intf);
   
  

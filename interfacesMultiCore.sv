@@ -37,7 +37,7 @@ interface globalInterface (input logic clk);
    genvar i;
    generate
    for(i = 0;i < `CORES; i++) begin
-      assign Data_Bus[i] =   PrWr[i] ? 32'hZ : Data_Bus_reg[i];
+      assign Data_Bus[i] =   PrWr[i] ? Data_Bus_reg[i]: 32'hZ;
    end
    endgenerate
    
