@@ -13,15 +13,15 @@ interface globalInterface (input logic clk);
    wire [`ADDRESSSIZE-1 : 0]	Address[2*`CORES-1:0];
    logic			CPU_stall[2*`CORES-1:0]; 
   //Interface between Proc and Arbiter                     
-   wire 			Com_Bus_Gnt_proc_0;
-   wire                         Com_Bus_Gnt_proc_1;
-   wire                         Com_Bus_Gnt_proc_2;
-   wire                         Com_Bus_Gnt_proc_3;
-   wire                         Com_Bus_Gnt_proc_4;
-   wire                         Com_Bus_Gnt_proc_5;
-   wire                         Com_Bus_Gnt_proc_6;
-   wire                         Com_Bus_Gnt_proc_7;
-   wire 			Com_Bus_Gnt_snoop;
+   logic 			Com_Bus_Gnt_proc_0;
+   logic                         Com_Bus_Gnt_proc_1;
+   logic                         Com_Bus_Gnt_proc_2;
+   logic                         Com_Bus_Gnt_proc_3;
+   logic                         Com_Bus_Gnt_proc_4;
+   logic                         Com_Bus_Gnt_proc_5;
+   logic                         Com_Bus_Gnt_proc_6;
+   logic                         Com_Bus_Gnt_proc_7;
+   logic 			Com_Bus_Gnt_snoop;
   //Interface between Cache and Bus
    logic 			All_Invalidation_done;
    wire 			Shared;
@@ -41,14 +41,13 @@ interface globalInterface (input logic clk);
    logic 		        Mem_oprn_abort;
    logic 		        Mem_write_done;
    wire		                Data_in_Bus;
-   logic	                Data_in_Bus_reg;
+   //logic	                Data_in_Bus_reg;
   // assign Data_in_Bus =  (PrRd[0]||PrRd[1]||PrRd[2]||PrRd[3]||
   //                       PrRd[4]||PrRd[5]||PrRd[6]||PrRd[7]||
   //                       PrWr[0]||PrWr[1]||PrWr[2]||PrWr[3]||
   //                       PrWr[4]||PrWr[5]||PrWr[6]||PrWr[7]||)? Data_in_Bus_reg : 1'bz;
    wire [`ADDRESSSIZE-1 : 0]	Address_Com;
    logic [`ADDRESSSIZE-1 : 0]	Address_Com_reg;
-  // assign Address_Com = PrRd || PrWr ? 32'hZ : Address_Com_reg; 
    wire [`ADDRESSSIZE-1 : 0]	Data_Bus_Com; 
 
    wire [`ADDRESSSIZE-1 : 0]	Data_Bus[2*`CORES-1:0];
@@ -80,7 +79,7 @@ interface globalInterface (input logic clk);
    wire                         Com_Bus_Gnt_snoop_3;
   //Interface between Lower Level Memory and Arbiter
    logic                        Mem_snoop_req;
-   wire                         Mem_snoop_gnt;
+   logic                         Mem_snoop_gnt;
    logic [1:0]                  Current_MESI_state_proc[`CORES-1:0];
    logic [1:0]                  Current_MESI_state_snoop[`CORES-1:0];
    logic [1:0]                  Blk_accessed[`CORES-1:0];

@@ -63,12 +63,9 @@ assign g_intf.Cache_var[7]             = CMC.P4_IL.cb.Cache_var;
  assign g_intf.LRU_var[7]              = CMC.P4_IL.cc.LRU_var;
  assign g_intf.LRU_replacement_proc[7] = CMC.P4_IL.LRU_replacement_proc;
 */
-assign g_intf.Address_Com              = CMC.Address_Com;
-assign g_intf.Data_Bus_Com             = CMC.Data_Bus_Com;
 assign g_intf.BusRd                    = CMC.BusRd;
 assign g_intf.BusRdX                   = CMC.BusRdX;
 assign g_intf.Invalidate               = CMC.Invalidate;
-assign g_intf.Data_in_Bus              = CMC.Data_in_Bus;
 
 
 always @(g_intf.clk) begin
@@ -246,13 +243,13 @@ $display("************** STARTING TOP LEVEL TESTING ******************");
    local_intf         = g_intf;
 // top read miss
    test_no            = 1;
-   topReadMiss_inst   = new();
-   topReadMiss_inst.randomize() with 
-    {Address          == 32'hdeadbeef &&
-     Shared           == 1'b0 &&  
-     Max_Resp_Delay   == 10;
-     core             == 0;
-     };
+   topReadMiss_inst                  = new();  
+   topReadMiss_inst.Address          = 32'hdeadbeef ;
+   topReadMiss_inst.Shared           = 1'b0;  
+   topReadMiss_inst.Max_Resp_Delay   = 10;
+   topReadMiss_inst.core             = 0;
+   
+
     temp_addr          = topReadMiss_inst.Address;
 
    topReadMiss_inst.testSimpleReadMiss(local_intf);
@@ -414,8 +411,9 @@ $display("Testing Read Miss Scenario using topReadMiss test case when other Cach
    topSnoopInvalidate_inst.Address        = {16'd100,14'd1,2'b00};
    topSnoopInvalidate_inst.Max_Resp_Delay = 10;
    topSnoopInvalidate_inst.core           = 0;
-   topSnoopInvalidate_inst.testInvalidation(local_intf);
-   #100;*/
+   topSnoopInvalidate_inst.testInvalidation(local_intf); */
+   #100;
+   $display("LRU Value from the test bench is %b",CMC.P1_DL.cc.LRU_var[temp_addr[`INDEX_MSB:`INDEX_LSB]]));
    $finish;       
 
 

@@ -268,7 +268,7 @@ begin
             end
             else if (PrRd && !Shared)
             begin
-                Updated_MESI_state_proc  <= EXCLUSIVE;//<= SHARED;//BUG FIX NEEDED
+                Updated_MESI_state_proc  <= SHARED;//<= SHARED;//BUG FIX NEEDED
             end
             else if (PrWr)
             begin

@@ -569,6 +569,7 @@ Shared 			= 1'b0;
 		CPU_stall       = 1'b0;
 		Blk_accessed 	= Blk_access_proc;
 		Com_Bus_Req_proc = 1'b0;
+		$display("SVDEBUG::After block is hit , Blk_accessed = %d ",Blk_accessed);
 	end
 	/*Processor read & cache miss*/
 	// Cache is missed and its requested from lower memories

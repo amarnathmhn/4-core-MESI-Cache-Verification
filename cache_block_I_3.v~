@@ -10,11 +10,11 @@
 // This module contains the Cache Tag, MESI, data and the logic for cache access with both Processor and Snoop requests
 // The module communicates with its processor, its cache_controller, All_invalidation checking block, Common Arbiter and Common Bus (which is shared among all caches & L2 level - separate for both Data & instruction)
 
-`include "cache_def_I_1.v"
+`include "cache_def_I_3.v"
 
 /* Cache block Module declaration*/
-module cache_block_I_1 ( clk,
-					PrRd,
+module cache_block_I_3 ( clk, 
+						PrRd,
                      Address,
                      Data_Bus,
                      CPU_stall,                    
@@ -107,8 +107,8 @@ parameter BLK4          = 2'b11;
 
 /***********************************Internal Cache Structure***************************************************/
 //Cache & LRU memory structure
-reg 	[`CACHE_DATA_SIZE-1 : 0]        Cache_var	         [0 : `CACHE_DEPTH-1];
-reg 	[`CACHE_TAG_VALID_SIZE-1 : 0]    Cache_proc_contr   [0 : `CACHE_DEPTH-1];
+reg 	[`CACHE_DATA_SIZE-1 : 0]        Cache_var	         [0 : 1024];
+reg 	[`CACHE_TAG_VALID_SIZE-1 : 0]    Cache_proc_contr   [0 : 1024];
 /***************************************************************************************************************/
 
 integer i;
@@ -133,7 +133,7 @@ assign Data_Bus = (PrRd) ? Data_Bus_reg : 32'hZ;
 /***************************************Driving of Common Bus **************************************************/
 // Driving of Common Busses when Grant is given by arbiter - Reg values are updated as per the request granted (i.e. processor or snoop)
 assign Data_Bus_Com        = Data_Bus_Com_reg  ;
-assign Address_Com         = Address_Com_reg;
+assign Address_Com         = PrRd  ? Address_Com_reg : 32'hz  ;
 
 
 assign Data_in_Bus         = Data_in_Bus_reg   ;
@@ -145,7 +145,7 @@ assign Data_in_Bus         = Data_in_Bus_reg   ;
 // Processor request wrapping
 always @ *
 begin
-	if (PrRd)
+if (PrRd)
 	begin
 		Index_proc 		   = Address [`INDEX_MSB      : `INDEX_LSB];
 		Tag_proc 		   = Address [`TAG_MSB        : `TAG_LSB];
@@ -164,7 +164,7 @@ end
 
 /**************** Code to check if the requested block is present in Cache - processor request******************/
 /*Compare the tags to see if there is a match in any of the cache blocks in the set - designed for 4 way associativity*/
-always @ *
+always @ (Index_proc or Tag_proc or Blk_offset_proc or PrRd or Data_in_Bus)
 begin
 if(PrRd)
 begin
@@ -213,6 +213,7 @@ end
 /***************************************************************************************************************/
 // Block hit computation based on Access_blk value - processor request
 always @ *
+
 begin
 if(PrRd)
 begin
@@ -245,7 +246,6 @@ begin
     begin
         Free_blk_proc    = BLK1;	
         blk_free_proc    = 1'b1;
-
     end
     else if (Cache_proc_contr[{Index_proc,BLK2}][`CACHE_VALID_BIT_MSB :`CACHE_VALID_BIT_LSB] == INVALID)	
     begin
@@ -327,7 +327,6 @@ Com_Bus_Req_proc	= 1'b0;
 	if(PrRd && Block_Hit_proc)
 	begin    
 		Data_Bus_reg      = Cache_var [{Index_proc,Blk_access_proc}][`CACHE_DATA_MSB:`CACHE_DATA_LSB];
-		CPU_stall         = 1'b0;
 		Blk_accessed 	   = Blk_access_proc;
 		Com_Bus_Req_proc	= 1'b0;			// Bus request is released
 	end
@@ -345,7 +344,7 @@ Com_Bus_Req_proc	= 1'b0;
 				Address_Com_reg 	= {Tag_proc, Index_proc, 2'b00};
 				if (Data_in_Bus)	// Signal from Other shared cache block or lower level L2 memory
 				begin
-					Data_Bus_reg = Cache_var[{Index_proc,Blk_access_proc}][`CACHE_DATA_MSB:`CACHE_DATA_LSB];
+					Cache_var[{Index_proc,Blk_access_proc}][`CACHE_DATA_MSB:`CACHE_DATA_LSB] 	               = Data_Bus_Com;
 					Cache_proc_contr[{Index_proc,Blk_access_proc}][`CACHE_VALID_BIT_MSB:`CACHE_VALID_BIT_LSB] = VALID;
 					Cache_proc_contr[{Index_proc,Blk_access_proc}][`CACHE_TAG_MSB:`CACHE_TAG_LSB] 	         = Tag_proc;
 					//Blk_accessed 									= Blk_access_proc;	// Block accessed is assigned
@@ -355,7 +354,7 @@ Com_Bus_Req_proc	= 1'b0;
 		end
 		// no free block is available - some block to be replaced - Once replaced the block is taken as free - then data is requested from L2 and stored in that block, which will then become hit
 		else if (!blk_free_proc)
-					Cache_proc_contr[{Index_proc,Blk_access_proc}][`CACHE_VALID_BIT_MSB:`CACHE_VALID_BIT_LSB] = INVALID; 
+					Cache_proc_contr[{Index_proc,Blk_access_proc}][`CACHE_VALID_BIT_MSB:`CACHE_VALID_BIT_LSB] = VALID; 
 	end
 end
 /***************************************************************************************************************/

@@ -14,11 +14,15 @@
 
 module top_C1();
 
-
+reg clk;
  //Global interface containing all the signals that need to be
  //driven/monitored
- globalInterface g_intf (.clk(a.clk));
-
+ globalInterface g_intf (.clk(clk));
+always 
+begin
+	#1 clk = 1'b0;
+	#1 clk = 1'b1;
+end
 
  //Virtual interface for global interface
  virtual interface globalInterface local_intf;
@@ -62,13 +66,10 @@ assign g_intf.Cache_var[7]             = CMC.P4_IL.cb.Cache_var;
  assign g_intf.Cache_proc_contr_IL[3]     = CMC.P4_IL.cb.Cache_proc_contr;
  assign g_intf.LRU_var[7]              = CMC.P4_IL.cc.LRU_var;
  assign g_intf.LRU_replacement_proc[7] = CMC.P4_IL.LRU_replacement_proc;
-
-assign g_intf.Address_Com              = CMC.Address_Com;
-assign g_intf.Data_Bus_Com             = CMC.Data_Bus_Com;
+*/
 assign g_intf.BusRd                    = CMC.BusRd;
 assign g_intf.BusRdX                   = CMC.BusRdX;
 assign g_intf.Invalidate               = CMC.Invalidate;
-assign g_intf.Data_in_Bus              = CMC.Data_in_Bus; */
 
 
 always @(g_intf.clk) begin
@@ -192,7 +193,7 @@ cache_multi_config_1 CMC (
 
 );
  
-arbiter a (
+/*arbiter a (
                         g_intf.Com_Bus_Req_proc_0,
 			g_intf.Com_Bus_Req_proc_1,
 			g_intf.Com_Bus_Req_proc_2,
@@ -220,7 +221,8 @@ arbiter a (
 			g_intf.Mem_snoop_req,
 			g_intf.Mem_snoop_gnt
 );
-
+*/
+//arbiter a();
 //Instantiate  Top level direct testcase object. Please consider that these
 //test cases consider more than 1 scenario specified in Test Plan and As
 //commented in TestCases.sv file
@@ -243,23 +245,48 @@ initial
 //Repeat the following tests for all cores using core variable in each testcase. For example core = 0 will test the cache in core 0 while checking the behavior of all other caches in the multi core environment
 $display("Core 1 testing started");
 $display("************** STARTING TOP LEVEL TESTING ******************"); 
+$display("************** TEST NO 1 ******************");
    local_intf         = g_intf;
 // top read miss
    test_no            = 1;
-   topReadMiss_inst   = new();  
+   topReadMiss_inst                  = new();  
    topReadMiss_inst.Address          = 32'hdeadbeef ;
-   topReadMiss_inst.Shared           = 1'b0 ;  
+   //topReadMiss_inst.Shared           = 1'b0;  
    topReadMiss_inst.Max_Resp_Delay   = 10;
    topReadMiss_inst.core             = 0;
-
-    temp_addr          = topReadMiss_inst.Address;
-
+   temp_addr          = topReadMiss_inst.Address;
    topReadMiss_inst.testSimpleReadMiss(local_intf);
-   //print lRU value
-   temp_data          = CMC.P1_DL.cb.Cache_var[{temp_addr[`INDEX_MSB: `INDEX_LSB],2'b00}][`CACHE_DATA_MSB: `CACHE_DATA_LSB];
-   
+   temp_data          = CMC.P1_DL.cb.Cache_var[{temp_addr[`INDEX_MSB: `INDEX_LSB],2'b00}][`CACHE_DATA_MSB: `CACHE_DATA_LSB];  
+   #10;
+   topReadMiss_inst.reset_DUT_inputs(local_intf);  
+   #100;
+$display("************** TEST NO 2 ******************");
+ 
+//Make Read Miss in Proc 2;
+// top read miss
+   test_no            += 1;
+   topReadMiss_inst                  = new();  
+   topReadMiss_inst.Address          = 32'hdeaddead ;
+   topReadMiss_inst.Max_Resp_Delay   = 10;
+   topReadMiss_inst.core             = 1;
+   temp_addr          = topReadMiss_inst.Address;
+   topReadMiss_inst.testSimpleReadMiss(local_intf);
+   temp_data          = CMC.P2_DL.cb.Cache_var[{temp_addr[`INDEX_MSB: `INDEX_LSB],2'b00}][`CACHE_DATA_MSB: `CACHE_DATA_LSB];
    #10;
    topReadMiss_inst.reset_DUT_inputs(local_intf); 
+   #100;
+   // top read miss in core 0 again for block present in core 1
+   test_no            = 1;
+   topReadMiss_inst                  = new();  
+   topReadMiss_inst.Address          = 32'hdeaddead ;
+   //topReadMiss_inst.Shared           = 1'b0;  
+   topReadMiss_inst.Max_Resp_Delay   = 10;
+   topReadMiss_inst.core             = 0;
+   temp_addr          = topReadMiss_inst.Address;
+   topReadMiss_inst.testSimpleReadMiss(local_intf);
+   temp_data          = CMC.P1_DL.cb.Cache_var[{temp_addr[`INDEX_MSB: `INDEX_LSB],2'b00}][`CACHE_DATA_MSB: `CACHE_DATA_LSB];  
+   #10;
+   topReadMiss_inst.reset_DUT_inputs(local_intf);  
    #100;
 /*//top read hit
    test_no            += 1;
@@ -413,8 +440,9 @@ $display("Testing Read Miss Scenario using topReadMiss test case when other Cach
    topSnoopInvalidate_inst.Address        = {16'd100,14'd1,2'b00};
    topSnoopInvalidate_inst.Max_Resp_Delay = 10;
    topSnoopInvalidate_inst.core           = 0;
-   topSnoopInvalidate_inst.testInvalidation(local_intf);
-   #100;*/
+   topSnoopInvalidate_inst.testInvalidation(local_intf); */
+   #100;
+   $display("LRU Value from the test bench is %b",CMC.P2_DL.cc.LRU_var[temp_addr[`INDEX_MSB:`INDEX_LSB]]);
    $finish;       
 
 
@@ -425,8 +453,24 @@ $display("Testing Read Miss Scenario using topReadMiss test case when other Cach
 
 
 always @(posedge g_intf.clk)
+ g_intf.check_UndefinedBehavior(0);
 
-   g_intf.check_UndefinedBehavior(0);
-
-
+always @(posedge g_intf.Com_Bus_Req_proc_0) begin
+     g_intf.Com_Bus_Gnt_proc_0 = 1;
+     wait(g_intf.Com_Bus_Req_proc_0 == 0);
+     g_intf.Com_Bus_Gnt_proc_0 = 0;
+end
+always @(posedge g_intf.Com_Bus_Req_proc_1) begin
+     g_intf.Com_Bus_Gnt_proc_1 = 1;
+     wait(g_intf.Com_Bus_Req_proc_1 == 0);
+     g_intf.Com_Bus_Gnt_proc_1 = 0;
+end
+always @(posedge g_intf.Mem_snoop_req) begin
+     g_intf.Mem_snoop_gnt = 1;
+     wait(g_intf.Mem_snoop_req == 0);
+     g_intf.Mem_snoop_gnt = 0;
+end
 endmodule
+
+
+

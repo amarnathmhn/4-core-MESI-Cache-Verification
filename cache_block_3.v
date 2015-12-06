@@ -218,8 +218,8 @@ assign Data_Bus = (PrRd) ? Data_Bus_reg : 32'hZ;
 // Driving of Common Busses when Grant is given by arbiter - Reg values are updated as per the request granted (i.e. processor or snoop)
 assign Data_Bus_Com        = Data_Bus_Com_reg;
 assign Address_Com         = Address_Com_reg;
-assign BusRd               = BusRdX_reg;
-assign BusRdX              = BusRd_reg;
+assign BusRd               = BusRd_reg;
+assign BusRdX              = BusRdX_reg;
 assign Mem_wr              = Mem_wr_reg;
 assign Mem_oprn_abort      = Mem_oprn_abort_reg;
 assign Data_in_Bus         = Data_in_Bus_reg;
