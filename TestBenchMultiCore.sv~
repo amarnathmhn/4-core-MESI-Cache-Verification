@@ -198,6 +198,16 @@ cache_multi_config_1 CMC (
 //test cases consider more than 1 scenario specified in Test Plan and As
 //commented in TestCases.sv file
 topLocal_NonLocalCoreTest topLocal_NonLocalCoreTest_inst;
+task testLocal_NonLocalCore(virtual interface globalInterface local_intf,input [3:0] local_cache, input [3:0] other_cache, input commandType local_operation, input [31:0] Address, input mesiStateType blockStateOtherCache );
+    topLocal_NonLocalCoreTest_inst                      = new();
+    topLocal_NonLocalCoreTest_inst.Max_Resp_Delay       = 10;
+    topLocal_NonLocalCoreTest_inst.local_cache          = local_cache;
+    topLocal_NonLocalCoreTest_inst.other_cache          = other_cache;
+    topLocal_NonLocalCoreTest_inst.operation            = local_operation;
+    topLocal_NonLocalCoreTest_inst.Address              = Address;
+    topLocal_NonLocalCoreTest_inst.blockStateOtherCache = blockStateOtherCache;
+    topLocal_NonLocalCoreTest_inst.testLocal_NonLocalCore(local_intf);
+endtask : testLocal_NonLocalCore
 
 reg[31:0] temp_addr;
 reg[31:0] temp_data;
@@ -224,19 +234,33 @@ initial
     blockStateOtherCache[i] = mesiStateType'(i); 
  end
  foreach(blockStateOtherCache[j]) begin
- topLocal_NonLocalCoreTest_inst                      = new();
- topLocal_NonLocalCoreTest_inst.Max_Resp_Delay       = 10;
- topLocal_NonLocalCoreTest_inst.local_cache          = local_cache;
- topLocal_NonLocalCoreTest_inst.other_cache          = other_cache;
- topLocal_NonLocalCoreTest_inst.operation            = local_operation;
- topLocal_NonLocalCoreTest_inst.Address              = Address;
- topLocal_NonLocalCoreTest_inst.blockStateOtherCache = blockStateOtherCache[j];
- topLocal_NonLocalCoreTest_inst.testLocal_NonLocalCore(local_intf);
+    $display("*********** START OF TEST %d",j);
+    /*topLocal_NonLocalCoreTest_inst                      = new();
+    topLocal_NonLocalCoreTest_inst.Max_Resp_Delay       = 10;
+    topLocal_NonLocalCoreTest_inst.local_cache          = local_cache;
+    topLocal_NonLocalCoreTest_inst.other_cache          = other_cache;
+    topLocal_NonLocalCoreTest_inst.operation            = local_operation;
+    topLocal_NonLocalCoreTest_inst.Address              = Address;
+    topLocal_NonLocalCoreTest_inst.blockStateOtherCache = blockStateOtherCache[j];
+    topLocal_NonLocalCoreTest_inst.testLocal_NonLocalCore(local_intf);*/
+    testLocal_NonLocalCore(.local_intf(local_intf),
+                           .local_cache(local_cache),
+                           .other_cache(other_cache),
+                           .local_operation(local_operation),
+                           .Address(Address),
+                           .blockStateOtherCache(blockStateOtherCache)); 
+
+    for(line = 3'b000; line <= 3'b011; line++) begin
+      $display("MESI State of block %d in P1_DL with Address %x is %s",line,Address,mesiStateType'(CMC.P1_DL.cb.Cache_proc_contr[{Address[`INDEX_MSB:`INDEX_LSB],line[1:0]}][`CACHE_MESI_MSB:`CACHE_MESI_LSB]));
+    end
+    for(line = 3'b000; line <= 3'b011; line++) begin
+      $display("MESI State of block %d in P2_DL with Address %x is %s",line,Address,mesiStateType'(CMC.P2_DL.cb.Cache_proc_contr[{Address[`INDEX_MSB:`INDEX_LSB],line[1:0]}][`CACHE_MESI_MSB:`CACHE_MESI_LSB]));
+    end
+    Address = Address + 32'h10000000;
+    $display("*********** END OF TEST %d",j);
  end
  #100;
  $finish;       
-
-
  end 
  
 

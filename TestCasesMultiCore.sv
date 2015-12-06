@@ -852,7 +852,7 @@ class topLocal_NonLocalCoreTest extends baseTestClass;
              topReadMiss_inst.core             = tmp_cache;
              temp_addr                         = topReadMiss_inst.Address;
              topReadMiss_inst.testSimpleReadMiss(sintf);*/
-             if(topReadMiss_inst.mesiStates[tmp_cache] == blockStateOtherCache)
+             if( sintf.Cache_proc_contr[other_cache][{temp_addr[`INDEX_MSB:`INDEX_LSB],sintf.Blk_access_proc[other_cache]}][`CACHE_MESI_MSB: `CACHE_MESI_LSB] == blockStateOtherCache)
                    $display("Successfully Created %s state for block with Address %x in Cache %d",blockStateOtherCache,Address,other_cache);
              else $display("Attempt UnSuccessful");
              repeat(Max_Resp_Delay) @sintf.clk;

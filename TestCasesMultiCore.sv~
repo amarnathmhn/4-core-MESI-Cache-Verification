@@ -841,7 +841,7 @@ class topLocal_NonLocalCoreTest extends baseTestClass;
              repeat(Max_Resp_Delay) @sintf.clk;
              topReadMiss_inst.reset_DUT_inputs(sintf);  
              repeat(Max_Resp_Delay) @sintf.clk;
-            // sintf.Cache_proc_contr[other_cache][{temp_addr[`INDEX_MSB:`INDEX_LSB],sintf.Blk_access_proc[other_cache]}][`CACHE_MESI_MSB: `CACHE_MESI_LSB] = 2'b01;
+             sintf.Cache_proc_contr[other_cache][{temp_addr[`INDEX_MSB:`INDEX_LSB],sintf.Blk_access_proc[other_cache]}][`CACHE_MESI_MSB: `CACHE_MESI_LSB] = 2'b01;
              //Do read Miss on some core other than the other_core and local_core
              /*tmp_cache  = 3 - (other_cache + local_cache);
              if (tmp_cache == 3) tmp_cache = 1;
