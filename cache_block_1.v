@@ -647,11 +647,15 @@ Shared 			= 1'b0;
 					//Com_Bus_Req_proc = 1'b1;
 					if(Com_Bus_Gnt_proc == 1'b1)
 					begin
+				           Invalidate_reg = 1'b1;
+					   Address_Com_reg     = {Tag_proc,Index_proc,2'b00};
+					   begin
 							Cache_var[{Index_proc,Blk_access_proc}][`CACHE_DATA_MSB:`CACHE_DATA_LSB] 	= Data_Bus;
 							Cache_proc_contr[{Index_proc,Blk_access_proc}][`CACHE_MESI_MSB:`CACHE_MESI_LSB] = Updated_MESI_state_proc;
 							CPU_stall 									= 1'b0;  
 							Blk_accessed 									= Blk_access_proc;
 							Com_Bus_Req_proc 								= 1'b0;
+					   end
 					end
 				end
 				// If exclusive, directly data is written and MESI state is updated (to modified)

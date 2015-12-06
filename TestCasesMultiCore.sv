@@ -604,14 +604,6 @@ class topReadMissSnoopHit extends baseTestClass;
    
     //Wait until cache places Address in Address_Com bus
     check_Address_Com_load(sintf,core);
-    
-    
-    /*sintf.Mem_snoop_req = 1;
-    wait(sintf.Mem_snoop_gnt == 1);
-    sintf.Mem_snoop_req               = 0;
-    //Main Memory puts data on the ClkBlk.Data_Bus_Com and raises Data_in_Bus
-    sintf.ClkBlk.Data_Bus_Com <= DataWrittenByMem;
-    sintf.ClkBlk.Data_in_Bus <= 1;*/
     //wait until lower memory or other cache places the data and asserts data_in_bus signal
     wait(sintf.Data_in_Bus == 1);
     //Check if MESI State is properly assigned to block corresponding to the Address given
@@ -944,7 +936,7 @@ class topWriteHit extends baseTestClass;
     rand reg [31:0] wrData;
     mesiStateType MESI_state;
     task testSimpleWriteHit(virtual interface globalInterface sintf);
-         $display("\n****** Test topWriteHit Started ****** "); 
+         $display("\n****** Test topWriteHit Started for core = %d ****** ",core); 
                         //store the MESI State
                         MESI_state = mesiStateType'(sintf.Cache_proc_contr[core][{Address[`INDEX_MSB:`INDEX_LSB],2'b00}][`CACHE_MESI_MSB:`CACHE_MESI_LSB]);
          $display("Current MESI State of the Block is %s",MESI_state.name());

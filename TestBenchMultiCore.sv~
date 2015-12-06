@@ -229,17 +229,18 @@ cache_multi_config_1 CMC (
 //commented in TestCases.sv file
 topReadMiss                     topReadMiss_inst;
 topReadMissSnoopHit             topReadMissSnoopHit_inst;
-/*topReadHit                      topReadHit_inst;
+topReadHit                      topReadHit_inst;
 topWriteMiss                    topWriteMiss_inst;
 topWriteHit                     topWriteHit_inst;
 topReadMissReplaceModified      topReadMissReplaceModified_inst;
 topWriteMissModifiedReplacement topWriteMissModifiedReplacement_inst;
 topBusRdSnoop                   topBusRdSnoop_inst;
 topBusRdXSnoop                  topBusRdXSnoop_inst;
-topSnoopInvalidate              topSnoopInvalidate_inst;*/
+//topSnoopInvalidate              topSnoopInvalidate_inst;
 reg[31:0] temp_addr;
 reg[31:0] temp_data;
 reg [7:0] test_no;
+reg tmp_blk_access;
 
 initial
  begin
@@ -262,7 +263,7 @@ $display("************** TEST NO 1 ******************");
    #10;
    topReadMiss_inst.reset_DUT_inputs(local_intf);  
    #100;
-$display("************** TEST NO 2 ******************");
+$display("************** TEST NO 2 : PrRd miss in Core 0 while core 1 contains block in E state******************");
  
 //Make Read Miss in Proc 2;
 // top read miss
@@ -284,15 +285,49 @@ $display("************** TEST NO 2 ******************");
    topReadMissSnoopHit_inst.Max_Resp_Delay   = 10;
    topReadMissSnoopHit_inst.core             = 0;
    temp_addr          = topReadMissSnoopHit_inst.Address;
-   $display("SVDEBUG::MESI State of Block with Address %x is %s in Core 1 before snoop ",temp_addr,mesiStateType'(CMC.P2_DL.cb.Cache_proc_contr[{temp_addr[`INDEX_MSB:`INDEX_LSB],CMC.P2_DL.cb.Blk_access_proc}][`CACHE_MESI_MSB:`CACHE_MESI_LSB]));
-   $display("SVDEBUG::MESI State of Block with Address %x is %s in Core 0 before snoop ",temp_addr,mesiStateType'(CMC.P1_DL.cb.Cache_proc_contr[{temp_addr[`INDEX_MSB:`INDEX_LSB],CMC.P2_DL.cb.Blk_access_proc}][`CACHE_MESI_MSB:`CACHE_MESI_LSB]));  
+   tmp_blk_access     = CMC.P2_DL.cb.Blk_access_proc;
+   $display("SVDEBUG::MESI State of Block with Address %x is %s in Core 1 before snoop ",temp_addr,mesiStateType'(CMC.P2_DL.cb.Cache_proc_contr[{temp_addr[`INDEX_MSB:`INDEX_LSB],tmp_blk_access}][`CACHE_MESI_MSB:`CACHE_MESI_LSB]));
+   $display("SVDEBUG::MESI State of Block with Address %x is %s in Core 0 before snoop ",temp_addr,mesiStateType'(CMC.P1_DL.cb.Cache_proc_contr[{temp_addr[`INDEX_MSB:`INDEX_LSB],CMC.P1_DL.cb.Blk_access_proc}][`CACHE_MESI_MSB:`CACHE_MESI_LSB]));  
    topReadMissSnoopHit_inst.testSimpleReadMissWithSnoopHit(local_intf);
    temp_data          = CMC.P1_DL.cb.Cache_var[{temp_addr[`INDEX_MSB: `INDEX_LSB],2'b00}][`CACHE_DATA_MSB: `CACHE_DATA_LSB];  
    #10;
-   $display("SVDEBUG::MESI State of Block with Address %x is %b in Core 1 after snoop",temp_addr,CMC.P2_DL.cb.Cache_proc_contr[{temp_addr[`INDEX_MSB:`INDEX_LSB],CMC.P2_DL.cb.Blk_access_proc}][`CACHE_MESI_MSB:`CACHE_MESI_LSB]);
-   $display("SVDEBUG::MESI State of Block with Address %x is %b in Core 0 after snoop",temp_addr,CMC.P1_DL.cb.Cache_proc_contr[{temp_addr[`INDEX_MSB:`INDEX_LSB],CMC.P2_DL.cb.Blk_access_proc}][`CACHE_MESI_MSB:`CACHE_MESI_LSB]);
+   $display("SVDEBUG::MESI State of Block with Address %x is %s in Core 1 after snoop",temp_addr,mesiStateType'(CMC.P2_DL.cb.Cache_proc_contr[{temp_addr[`INDEX_MSB:`INDEX_LSB],tmp_blk_access}][`CACHE_MESI_MSB:`CACHE_MESI_LSB]));
+   $display("SVDEBUG::MESI State of Block with Address %x is %s in Core 0 after snoop",temp_addr,mesiStateType'(CMC.P1_DL.cb.Cache_proc_contr[{temp_addr[`INDEX_MSB:`INDEX_LSB],CMC.P1_DL.cb.Blk_access_proc}][`CACHE_MESI_MSB:`CACHE_MESI_LSB]));
    topReadMissSnoopHit_inst.reset_DUT_inputs(local_intf);  
    #100;
+$display("************* TEST NO 3 : PrRd miss in Core 0 while core 1 contains block in M state *****************");
+//Change the state to M
+   test_no            += 1;
+  // CMC.P2_DL.cb.Cache_proc_contr[{temp_addr[`INDEX_MSB:`INDEX_LSB],tmp_blk_access}][`CACHE_MESI_MSB:`CACHE_MESI_LSB] = 2'b11;
+ //write hit in core 1 start
+   $display("SVDEBUGTEST::MESI State of Block with Address %x is %s in Core 0 before write HIT ",temp_addr,mesiStateType'(CMC.P1_DL.cb.Cache_proc_contr[{temp_addr[`INDEX_MSB:`INDEX_LSB],tmp_blk_access}][`CACHE_MESI_MSB:`CACHE_MESI_LSB]));
+   topWriteHit_inst   = new();
+   topWriteHit_inst.Address           = temp_addr;
+   topWriteHit_inst.Max_Resp_Delay    = 10;
+   topWriteHit_inst.core              = 0;
+   topWriteHit_inst.wrData            = 32'hbaabbaab;
+   topWriteHit_inst.testSimpleWriteHit(local_intf);
+   #100;
+   topWriteHit_inst.reset_DUT_inputs(local_intf);
+   #100;
+   $display("SVDEBUGTEST::MESI State of Block with Address %x is %s in Core 1 before snoop ",temp_addr,mesiStateType'(CMC.P2_DL.cb.Cache_proc_contr[{temp_addr[`INDEX_MSB:`INDEX_LSB],tmp_blk_access}][`CACHE_MESI_MSB:`CACHE_MESI_LSB]));
+   $display("SVDEBUGTEST::MESI State of Block with Address %x is %s in Core 0 before snoop ",temp_addr,mesiStateType'(CMC.P1_DL.cb.Cache_proc_contr[{temp_addr[`INDEX_MSB:`INDEX_LSB],tmp_blk_access}][`CACHE_MESI_MSB:`CACHE_MESI_LSB]));
+ //write hit in core1 end
+ // top read miss in core 0 again for block present in core 1
+ /*  topReadMissSnoopHit_inst                  = new();  
+   topReadMissSnoopHit_inst.Address          = temp_addr ;
+   //topReadMiss_inst.Shared           = 1'b0;  
+   topReadMissSnoopHit_inst.Max_Resp_Delay   = 10;
+   topReadMissSnoopHit_inst.core             = 1;
+   //temp_addr          = topReadMissSnoopHit_inst.Address;
+   $display("SVDEBUG::MESI State of Block with Address %x is %s in Core 0 before snoop ",temp_addr,mesiStateType'(CMC.P1_DL.cb.Cache_proc_contr[{temp_addr[`INDEX_MSB:`INDEX_LSB],tmp_blk_access}][`CACHE_MESI_MSB:`CACHE_MESI_LSB]));  
+   topReadMissSnoopHit_inst.testSimpleReadMissWithSnoopHit(local_intf);
+   temp_data          = CMC.P1_DL.cb.Cache_var[{temp_addr[`INDEX_MSB: `INDEX_LSB],2'b00}][`CACHE_DATA_MSB: `CACHE_DATA_LSB];  
+   #10;
+   $display("SVDEBUG::MESI State of Block with Address %x is %s in Core 1 after snoop",temp_addr,mesiStateType'(CMC.P2_DL.cb.Cache_proc_contr[{temp_addr[`INDEX_MSB:`INDEX_LSB],CMC.P2_DL.cb.Blk_access_proc}][`CACHE_MESI_MSB:`CACHE_MESI_LSB]));
+   $display("SVDEBUG::MESI State of Block with Address %x is %s in Core 0 after snoop",temp_addr,mesiStateType'(CMC.P1_DL.cb.Cache_proc_contr[{temp_addr[`INDEX_MSB:`INDEX_LSB],CMC.P1_DL.cb.Blk_access_proc}][`CACHE_MESI_MSB:`CACHE_MESI_LSB]));
+   topReadMissSnoopHit_inst.reset_DUT_inputs(local_intf);  
+   #100;*/
 /*//top read hit
    test_no            += 1;
    topReadHit_inst    = new();
