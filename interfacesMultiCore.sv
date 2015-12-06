@@ -13,26 +13,13 @@ interface globalInterface (input logic clk);
    wire [`ADDRESSSIZE-1 : 0]	Address[2*`CORES-1:0];
    logic			CPU_stall[2*`CORES-1:0]; 
   //Interface between Proc and Arbiter                     
-   logic 			Com_Bus_Gnt_proc_0;
-   logic                         Com_Bus_Gnt_proc_1;
-   logic                         Com_Bus_Gnt_proc_2;
-   logic                         Com_Bus_Gnt_proc_3;
-   logic                         Com_Bus_Gnt_proc_4;
-   logic                         Com_Bus_Gnt_proc_5;
-   logic                         Com_Bus_Gnt_proc_6;
-   logic                         Com_Bus_Gnt_proc_7;
-   logic 			Com_Bus_Gnt_snoop;
+  logic 			Com_Bus_Gnt_proc[0:7];
   //Interface between Cache and Bus
    logic 			All_Invalidation_done;
    wire 			Shared;
    wire         		BusRd;
    reg          		BusRd_reg;
-  // assign BusRd = PrRd[0]||PrRd[1]||PrRd[2]||PrRd[3]||
-  //                PrRd[5]||PrRd[6]||PrRd[7]||PrRd[7]||
-  //                ? 1'bZ: BusRd_reg;
    wire 		        BusRdX;
-  // reg  		        BusRdX_reg;
-  // assign BusRdX = PrWr ? 1'bZ : BusRdX_reg;
    wire 			Invalidate;
    wire 		        Invalidation_done[`CORES-1:0];
    logic 			Shared_local[`CORES-1:0];
@@ -41,11 +28,6 @@ interface globalInterface (input logic clk);
    logic 		        Mem_oprn_abort;
    logic 		        Mem_write_done;
    wire		                Data_in_Bus;
-   //logic	                Data_in_Bus_reg;
-  // assign Data_in_Bus =  (PrRd[0]||PrRd[1]||PrRd[2]||PrRd[3]||
-  //                       PrRd[4]||PrRd[5]||PrRd[6]||PrRd[7]||
-  //                       PrWr[0]||PrWr[1]||PrWr[2]||PrWr[3]||
-  //                       PrWr[4]||PrWr[5]||PrWr[6]||PrWr[7]||)? Data_in_Bus_reg : 1'bz;
    wire [`ADDRESSSIZE-1 : 0]	Address_Com;
    logic [`ADDRESSSIZE-1 : 0]	Address_Com_reg;
    wire [`ADDRESSSIZE-1 : 0]	Data_Bus_Com; 
@@ -60,23 +42,9 @@ interface globalInterface (input logic clk);
    endgenerate
    
   // assign Data_Bus = PrWr ? Data_Bus_reg : 32'bZ;
-   logic                         Com_Bus_Req_proc_0;
-   logic                         Com_Bus_Req_proc_1;
-   logic                         Com_Bus_Req_proc_2;
-   logic                         Com_Bus_Req_proc_3;
-   logic                         Com_Bus_Req_proc_4;
-   logic                         Com_Bus_Req_proc_5;
-   logic                         Com_Bus_Req_proc_6;
-   logic                         Com_Bus_Req_proc_7;
-   logic 			 Com_Bus_Req_snoop_0;
-   logic                         Com_Bus_Req_snoop_1;
-   logic                         Com_Bus_Req_snoop_2;
-   logic                         Com_Bus_Req_snoop_3;
-   logic                         Com_Bus_Req_snoop_4;
-   logic                         Com_Bus_Gnt_snoop_0;
-   logic                         Com_Bus_Gnt_snoop_1;
-   logic                         Com_Bus_Gnt_snoop_2;
-   logic                         Com_Bus_Gnt_snoop_3;
+  logic                          Com_Bus_Req_proc[0:7];
+  logic 			 Com_Bus_Req_snoop[0:7];
+  logic                          Com_Bus_Gnt_snoop[0:7];
   //Interface between Lower Level Memory and Arbiter
    logic                        Mem_snoop_req;
    logic                         Mem_snoop_gnt;
@@ -94,8 +62,8 @@ interface globalInterface (input logic clk);
    logic [`CACHE_DATA_SIZE-1 : 0]    Cache_var[2*`CORES][0 : `CACHE_DEPTH-1];
    logic [`CACHE_TAG_MESI_SIZE-1  : 0] Cache_proc_contr[`CORES][0 : `CACHE_DEPTH-1];
    logic [`CACHE_TAG_VALID_SIZE-1 : 0] Cache_proc_contr_IL[`CORES][0 : `CACHE_DEPTH-1];
-   logic [1:0] Blk_access_proc[`CORES-1:0];
-   logic [1:0] Blk_access_snoop[`CORES-1:0];
+   logic [1:0] Blk_access_proc[2*`CORES-1:0];
+   logic [1:0] Blk_access_snoop[2*`CORES-1:0];
 
    logic [`LRU_SIZE-1 : 0]	LRU_var	[`CORES][0:`NUM_OF_SETS-1];
 
@@ -114,23 +82,15 @@ interface globalInterface (input logic clk);
      failed = 0; 
  //Task to check if there is any undefined behavior
   task check_UndefinedBehavior(input int core);
-     bit Com_Bus_Req_snoop;
-     case(core)
-       0: Com_Bus_Req_snoop = Com_Bus_Req_snoop_0;
-       1: Com_Bus_Req_snoop = Com_Bus_Req_snoop_1;
-       2: Com_Bus_Req_snoop = Com_Bus_Req_snoop_2;
-       3: Com_Bus_Req_snoop = Com_Bus_Req_snoop_3;
-     endcase
-
      if(PrRd[core])begin
-         if(Com_Bus_Req_snoop) begin
-            $display("BUG:: Com_Bus_Req_Snoop is asserted while it should remain de-asserted\n");
+         if(Com_Bus_Req_snoop[core]) begin
+            $display("BUG:: Com_Bus_Req_Snoop[%d] is asserted while it should remain de-asserted\n",core);
             failed = 1;
          end
      end 
      else if(PrWr[core])  begin
-         if(Com_Bus_Req_snoop) begin
-            $display("BUG:: Com_Bus_Req_Snoop is asserted while it should remain de-asserted");
+         if(Com_Bus_Req_snoop[core]) begin
+            $display("BUG:: Com_Bus_Req_Snoop[%d] is asserted while it should remain de-asserted",core);
             failed = 1;
          end
      end

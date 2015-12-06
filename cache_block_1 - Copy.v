@@ -130,7 +130,7 @@ reg                                     BusRdX_reg;
 reg                                     Mem_wr_reg;
 reg                                     Mem_oprn_abort_reg;
 reg                                     Data_in_Bus_reg;
-//reg                                     Invalidation_done_reg;
+reg                                     Invalidation_done_reg;
 reg                                     Invalidate_reg;
 reg					Shared;
 
@@ -647,11 +647,15 @@ Shared 			= 1'b0;
 					//Com_Bus_Req_proc = 1'b1;
 					if(Com_Bus_Gnt_proc == 1'b1)
 					begin
+				           Invalidate_reg = 1'b1;
+					   Address_Com_reg     = {Tag_proc,Index_proc,2'b00};
+					   begin
 							Cache_var[{Index_proc,Blk_access_proc}][`CACHE_DATA_MSB:`CACHE_DATA_LSB] 	= Data_Bus;
 							Cache_proc_contr[{Index_proc,Blk_access_proc}][`CACHE_MESI_MSB:`CACHE_MESI_LSB] = Updated_MESI_state_proc;
 							CPU_stall 									= 1'b0;  
 							Blk_accessed 									= Blk_access_proc;
 							Com_Bus_Req_proc 								= 1'b0;
+					   end
 					end
 				end
 				// If exclusive, directly data is written and MESI state is updated (to modified)
@@ -803,7 +807,7 @@ Shared 			= 1'b0;
 					end
 				endcase
 			end
-			/*	// If snoop request is for invalidation
+				// If snoop request is for invalidation
 				else if (Invalidate)
 				begin
 					// Block is invalidated and Invalidation_done signal is asserted
@@ -811,7 +815,7 @@ Shared 			= 1'b0;
 					Cache_proc_contr[{Index_snoop,Blk_access_snoop}][`CACHE_MESI_MSB:`CACHE_MESI_LSB] 	= INVALID;
 					Invalidation_done_reg 									= 1'b1;            
 					Com_Bus_Req_snoop 									= 1'b0;
-				end*/
+				end
 		end
 			//Com_Bus_Req_snoop = 1'b0;
 	end
