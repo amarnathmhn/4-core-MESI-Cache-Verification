@@ -27,7 +27,7 @@ class baseTestClass;
    int delay;
    reg [2:0] expected_lru_var;
    reg [1:0] expected_line_to_replace;
-   mesiStateType mesiStates[0:2*`CORES-1]; 
+   mesiStateType mesiStates[2*`CORES]; 
    
    //Task to wait and check for Com_Bus_Req_proc_0 and CPU_Stall to be asserted
    virtual task check_ComBusReqproc_CPUStall_assert(virtual interface globalInterface sintf,input [3:0] core);
@@ -803,9 +803,10 @@ class topLocal_NonLocalCoreTest extends baseTestClass;
              topReadMiss_inst.core             = other_cache;
              temp_addr                         = topReadMiss_inst.Address;
              topReadMiss_inst.testSimpleReadMiss(sintf);
-             if(sintf.Updated_MESI_state_proc[core] == blockStateOtherCache)
+             
+             if(topReadMiss_inst.mesiStates[other_cache] == blockStateOtherCache)
                $display("Successfully Created %s state for block with Address %x in Cache %d",blockStateOtherCache,Address,other_cache);
-             else $display("Attempt UnSuccessful");
+             else $display("Attempt UnSuccessful. MESI State in other Cache %d is %s",other_cache,mesiStates[other_cache]);
              repeat(Max_Resp_Delay) @sintf.clk;
              topReadMiss_inst.reset_DUT_inputs(sintf);  
              repeat(Max_Resp_Delay) @sintf.clk;
@@ -819,7 +820,7 @@ class topLocal_NonLocalCoreTest extends baseTestClass;
              topWriteMiss_inst.core            = other_cache;
              topWriteMiss_inst.wrData          = 32'hbabababa; 
              topWriteMiss_inst.testWriteMiss(sintf);
-             if(sintf.Updated_MESI_state_proc[core] == blockStateOtherCache)
+             if(topWriteMiss_inst.mesiStates[other_cache] == blockStateOtherCache)
                $display("Successfully Created %s state for block with Address %x in Cache %d",blockStateOtherCache,Address,other_cache);
              else $display("Attempt UnSuccessful");
              #100;
@@ -834,12 +835,13 @@ class topLocal_NonLocalCoreTest extends baseTestClass;
              topReadMiss_inst.core             = other_cache;
              temp_addr                         = topReadMiss_inst.Address;
              topReadMiss_inst.testSimpleReadMiss(sintf);
+             mesiStates[other_cache] = topReadMiss_inst.mesiStates[other_cache];
              repeat(Max_Resp_Delay) @sintf.clk;
              topReadMiss_inst.reset_DUT_inputs(sintf);  
              repeat(Max_Resp_Delay) @sintf.clk;
-             sintf.Cache_proc_contr[other_cache][{temp_addr[`INDEX_MSB:`INDEX_LSB],sintf.Blk_access_proc[other_cache]}][`CACHE_MESI_MSB: `CACHE_MESI_LSB] = 2'b01;
+            // sintf.Cache_proc_contr[other_cache][{temp_addr[`INDEX_MSB:`INDEX_LSB],sintf.Blk_access_proc[other_cache]}][`CACHE_MESI_MSB: `CACHE_MESI_LSB] = 2'b01;
              //Do read Miss on some core other than the other_core and local_core
-             /*tmp_cache  = 3 - (other_cache + local_cache);
+             tmp_cache  = 3 - (other_cache + local_cache);
              if (tmp_cache == 3) tmp_cache = 1;
              //Do read Miss on tmp_cache
              topReadMiss_inst                  = new();  
@@ -847,8 +849,8 @@ class topLocal_NonLocalCoreTest extends baseTestClass;
              topReadMiss_inst.Max_Resp_Delay   = Max_Resp_Delay;
              topReadMiss_inst.core             = tmp_cache;
              temp_addr                         = topReadMiss_inst.Address;
-             topReadMiss_inst.testSimpleReadMiss(sintf);*/
-             if( sintf.Cache_proc_contr[other_cache][{temp_addr[`INDEX_MSB:`INDEX_LSB],sintf.Blk_access_proc[other_cache]}][`CACHE_MESI_MSB: `CACHE_MESI_LSB] == blockStateOtherCache)
+             topReadMiss_inst.testSimpleReadMiss(sintf);
+             if(topReadMiss_inst.mesiStates[tmp_cache] == blockStateOtherCache)
                    $display("Successfully Created %s state for block with Address %x in Cache %d",blockStateOtherCache,Address,other_cache);
              else $display("Attempt UnSuccessful");
              repeat(Max_Resp_Delay) @sintf.clk;
