@@ -841,9 +841,9 @@ class topLocal_NonLocalCoreTest extends baseTestClass;
              repeat(Max_Resp_Delay) @sintf.clk;
              topReadMiss_inst.reset_DUT_inputs(sintf);  
              repeat(Max_Resp_Delay) @sintf.clk;
-            // sintf.Cache_proc_contr[other_cache][{temp_addr[`INDEX_MSB:`INDEX_LSB],sintf.Blk_access_proc[other_cache]}][`CACHE_MESI_MSB: `CACHE_MESI_LSB] = 2'b01;
+             sintf.Cache_proc_contr[other_cache][{temp_addr[`INDEX_MSB:`INDEX_LSB],sintf.Blk_access_proc[other_cache]}][`CACHE_MESI_MSB: `CACHE_MESI_LSB] = 2'b01;
              //Do read Miss on some core other than the other_core and local_core
-             tmp_cache  = 3 - (other_cache + local_cache);
+             /*tmp_cache  = 3 - (other_cache + local_cache);
              if (tmp_cache == 3) tmp_cache = 1;
              //Do read Miss on tmp_cache
              topReadMiss_inst                  = new();  
@@ -851,7 +851,7 @@ class topLocal_NonLocalCoreTest extends baseTestClass;
              topReadMiss_inst.Max_Resp_Delay   = Max_Resp_Delay;
              topReadMiss_inst.core             = tmp_cache;
              temp_addr                         = topReadMiss_inst.Address;
-             topReadMiss_inst.testSimpleReadMiss(sintf);
+             topReadMiss_inst.testSimpleReadMiss(sintf);*/
              if(topReadMiss_inst.mesiStates[tmp_cache] == blockStateOtherCache)
                    $display("Successfully Created %s state for block with Address %x in Cache %d",blockStateOtherCache,Address,other_cache);
              else $display("Attempt UnSuccessful");
@@ -859,14 +859,14 @@ class topLocal_NonLocalCoreTest extends baseTestClass;
              topReadMiss_inst.reset_DUT_inputs(sintf);  
              repeat(Max_Resp_Delay) @sintf.clk;
          end
-         for (line=2'b00; line <= 2'b11; line++) begin
+         /*for (line=2'b00; line <= 2'b11; line++) begin
                      mst = mesiStateType'(sintf.Cache_proc_contr[other_cache][{Address[`INDEX_MSB:`INDEX_LSB],line[1:0]}][`CACHE_MESI_MSB:`CACHE_MESI_LSB]);
                      $display("mst for line %d is %s in other core %d",line,mesiStateType'(mst),other_cache);
          end
          for (line=2'b00; line <= 2'b11; line++) begin
                      mst = mesiStateType'(sintf.Cache_proc_contr[local_cache][{Address[`INDEX_MSB:`INDEX_LSB],line[1:0]}][`CACHE_MESI_MSB:`CACHE_MESI_LSB]);
                      $display("mst for line %d is %s in local core %d",line,mesiStateType'(mst),local_cache);
-         end
+         end*/
      end
   endtask :  createOtherCacheBlockState
   //task to test PrRd/PrWr on the local cache. Attempt for a Read/Write Miss
@@ -889,6 +889,7 @@ class topLocal_NonLocalCoreTest extends baseTestClass;
              check_BusRd_assert(sintf,local_cache);
              //Wait until cache places Address in Address_Com bus
              check_Address_Com_load(sintf,local_cache);
+
              if(blockStateOtherCache == INVALID) begin
                 DataWrittenByMem = 32'hbabababa;
                 //Main Memory requests for Bus Access. Wait for Bus Access Grant by the arbiter
@@ -966,7 +967,21 @@ class topLocal_NonLocalCoreTest extends baseTestClass;
              check_ComBusGntproc_assert(sintf,local_cache);
              check_BusRdX_assert(sintf,local_cache);
              check_Address_Com_load(sintf,local_cache);
-             if(blockStateOtherCache == SHARED) begin
+
+             if(blockStateOtherCache == INVALID) begin
+                //Lower Memory or Other Cache Loads Data on the Bus
+                sintf.ClkBlk.Data_in_Bus <= 1;
+                sintf.ClkBlk.Data_Bus_Com <= 32'hABACABAB;
+                //Check if MESI State is properly assigned to block corresponding to the Address given
+                check_MESI_fsm(sintf,MODIFIED,local_cache);
+                //Check if Data is correctly written into the cache
+                //check_CacheVar_Data(sintf,wrData,Address,core); 
+                //check_DataBus_valid(sintf,wrData); 
+                repeat(Max_Resp_Delay) @(posedge sintf.clk);
+                check_ComBusReqproc_CPUStall_deaassert(sintf,local_cache);
+                repeat(Max_Resp_Delay) @(posedge sintf.clk);
+             end
+             else if(blockStateOtherCache == SHARED) begin
                check_Shared_assert(sintf);
                mst =  mesiStateType'(sintf.Cache_proc_contr[other_cache][{Address[`INDEX_MSB:`INDEX_LSB],sintf.Blk_access_proc[other_cache]}][`CACHE_MESI_MSB:`CACHE_MESI_LSB]);
                 if(mst == INVALID) begin
@@ -1014,14 +1029,14 @@ class topLocal_NonLocalCoreTest extends baseTestClass;
              //topWriteMiss_inst.(sintf);
              #100;
         end
-      for (line=2'b00; line <= 2'b11; line++) begin
+      /*for (line=2'b00; line <= 2'b11; line++) begin
            mst = mesiStateType'(sintf.Cache_proc_contr[other_cache][{Address[`INDEX_MSB:`INDEX_LSB],line[1:0]}][`CACHE_MESI_MSB:`CACHE_MESI_LSB]);
            $display("mst for line %d is %s in other core %d",line,mesiStateType'(mst),other_cache);
       end
       for (line=2'b00; line <= 2'b11; line++) begin
            mst = mesiStateType'(sintf.Cache_proc_contr[local_cache][{Address[`INDEX_MSB:`INDEX_LSB],line[1:0]}][`CACHE_MESI_MSB:`CACHE_MESI_LSB]);
            $display("mst for line %d is %s in local core %d",line,mesiStateType'(mst),local_cache);
-      end
+      end*/
      end
   endtask :  testLocalCache
   task testLocal_NonLocalCore(virtual interface globalInterface sintf);

@@ -207,7 +207,7 @@ reg tmp_blk_access;
 reg [3:0] other_cache;
 reg [3:0] local_cache;
 commandType local_operation;
-mesiStateType blockStateOtherCache;
+mesiStateType blockStateOtherCache[0:3];
 mesiStateType mst;
 reg [31:0] Address;
 reg [2:0] line;
@@ -219,27 +219,20 @@ initial
  other_cache = 1;
  local_cache = 0;
  local_operation = PrRd;
- blockStateOtherCache = EXCLUSIVE;
  Address     = 32'hDEADBEEF;
+ for(int i=0; i <=3 ; i++) begin
+    blockStateOtherCache[i] = mesiStateType'(i); 
+ end
+ foreach(blockStateOtherCache[j]) begin
  topLocal_NonLocalCoreTest_inst                      = new();
  topLocal_NonLocalCoreTest_inst.Max_Resp_Delay       = 10;
  topLocal_NonLocalCoreTest_inst.local_cache          = local_cache;
  topLocal_NonLocalCoreTest_inst.other_cache          = other_cache;
  topLocal_NonLocalCoreTest_inst.operation            = local_operation;
- topLocal_NonLocalCoreTest_inst.Address              = Address;
- topLocal_NonLocalCoreTest_inst.blockStateOtherCache = blockStateOtherCache;
+ topLocal_NonLocalCoreTest_inst.Address              = Address + 32'h100000000;
+ topLocal_NonLocalCoreTest_inst.blockStateOtherCache = blockStateOtherCache[j];
  topLocal_NonLocalCoreTest_inst.testLocal_NonLocalCore(local_intf);
- //topLocal_NonLocalCoreTest_inst.createOtherCacheBlockState(local_intf);
- 
- /*for (line=2'b00; line <= 2'b11; line++) begin
-       mst = mesiStateType'(CMC.P1_DL.cb.Cache_proc_contr[{Address[`INDEX_MSB:`INDEX_LSB],line[1:0]}][`CACHE_MESI_MSB:`CACHE_MESI_LSB]);
-       $display("mst for line %d is %s in core 0",line,mesiStateType'(mst));
- end 
- for (line=2'b00; line <= 2'b11; line++) begin
-       mst =mesiStateType'( CMC.P2_DL.cb.Cache_proc_contr[{Address[`INDEX_MSB:`INDEX_LSB],line[1:0]}][`CACHE_MESI_MSB:`CACHE_MESI_LSB]);
-       $display("mst for line %d is %s in core 1",line,mesiStateType'(mst));
- end 
- */
+ end
  #100;
  $finish;       
 
