@@ -645,8 +645,19 @@ class topReadMissSnoopHit extends baseTestClass;
     check_ComBusReqproc_CPUStall_deaassert(sintf,core);
     repeat(Max_Resp_Delay) @sintf.clk;
   endtask : check
+
+  //   Creates the simple Read stimulus and drives it to the DUT and checks for the behavior. Take the single Top Level Cache interface as input.
+   task testSimpleReadMissWithSnoopHit(virtual globalInterface sintf);
+      
+     $display("\n****** Test topReadMissSnoopHit Started ****** "); 
+     
+      drive(sintf); 
+      check(sintf);
+    repeat(Max_Resp_Delay) @sintf.clk;
+    $display("****** Test topReadMissSnoopHit Done Status = %s ******\n",!sintf.failed?status:"FAILED"); 
+   endtask : testSimpleReadMissWithSnoopHit
   
-endclass
+endclass : topReadMissSnoopHit
 // A Simple Directed Testcase for Scenario  :Read Hit. Verified at the top level
 class topReadHit extends baseTestClass;
    rand reg[31:0] last_data_stored;
