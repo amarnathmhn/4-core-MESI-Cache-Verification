@@ -558,7 +558,7 @@ class topReadMiss extends baseTestClass;
 //   Creates the simple Read stimulus and drives it to the DUT and checks for the behavior. Take the single Top Level Cache interface as input.
    task testSimpleReadMiss(virtual globalInterface sintf);
       
-     $display("\n****** Test topReadMiss Started ****** "); 
+     $display("\n****** Test topReadMiss Started for core = %d ****** ",core); 
      
       drive(sintf); 
       check(sintf);
@@ -936,7 +936,7 @@ class topWriteHit extends baseTestClass;
     rand reg [31:0] wrData;
     mesiStateType MESI_state;
     task testSimpleWriteHit(virtual interface globalInterface sintf);
-         $display("\n****** Test topWriteHit Started ****** "); 
+         $display("\n****** Test topWriteHit Started for core = %d ****** ",core); 
                         //store the MESI State
                         MESI_state = mesiStateType'(sintf.Cache_proc_contr[core][{Address[`INDEX_MSB:`INDEX_LSB],2'b00}][`CACHE_MESI_MSB:`CACHE_MESI_LSB]);
          $display("Current MESI State of the Block is %s",MESI_state.name());

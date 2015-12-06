@@ -558,7 +558,7 @@ class topReadMiss extends baseTestClass;
 //   Creates the simple Read stimulus and drives it to the DUT and checks for the behavior. Take the single Top Level Cache interface as input.
    task testSimpleReadMiss(virtual globalInterface sintf);
       
-     $display("\n****** Test topReadMiss Started ****** "); 
+     $display("\n****** Test topReadMiss Started for core = %d ****** ",core); 
      
       drive(sintf); 
       check(sintf);
@@ -641,7 +641,7 @@ class topReadMissSnoopHit extends baseTestClass;
   //   Creates the simple Read stimulus and drives it to the DUT and checks for the behavior. Take the single Top Level Cache interface as input.
    task testSimpleReadMissWithSnoopHit(virtual globalInterface sintf);
       
-     $display("\n****** Test topReadMissSnoopHit Started ****** "); 
+     $display("\n****** Test topReadMissSnoopHit Started for core = %d ****** ",core); 
      
       drive(sintf); 
       check(sintf);

@@ -286,16 +286,16 @@ $display("************** TEST NO 2 : PrRd miss in Core 0 while core 1 contains b
    topReadMissSnoopHit_inst.core             = 0;
    temp_addr          = topReadMissSnoopHit_inst.Address;
    tmp_blk_access     = CMC.P2_DL.cb.Blk_access_proc;
-   $display("SVDEBUG::MESI State of Block with Address %x is %s in Core 1 before snoop ",temp_addr,mesiStateType'(CMC.P2_DL.cb.Cache_proc_contr[{temp_addr[`INDEX_MSB:`INDEX_LSB],tmp_blk_access}][`CACHE_MESI_MSB:`CACHE_MESI_LSB]));
+   $display("SVDEBUG::MESI State of Block with Address %x is %s in Core 1 before snoop ",temp_addr,mesiStateType'(CMC.P2_DL.cb.Cache_proc_contr[{temp_addr[`INDEX_MSB:`INDEX_LSB],CMC.P2_DL.cb.Blk_access_proc}][`CACHE_MESI_MSB:`CACHE_MESI_LSB]));
    $display("SVDEBUG::MESI State of Block with Address %x is %s in Core 0 before snoop ",temp_addr,mesiStateType'(CMC.P1_DL.cb.Cache_proc_contr[{temp_addr[`INDEX_MSB:`INDEX_LSB],CMC.P1_DL.cb.Blk_access_proc}][`CACHE_MESI_MSB:`CACHE_MESI_LSB]));  
    topReadMissSnoopHit_inst.testSimpleReadMissWithSnoopHit(local_intf);
    temp_data          = CMC.P1_DL.cb.Cache_var[{temp_addr[`INDEX_MSB: `INDEX_LSB],2'b00}][`CACHE_DATA_MSB: `CACHE_DATA_LSB];  
    #10;
-   $display("SVDEBUG::MESI State of Block with Address %x is %s in Core 1 after snoop",temp_addr,mesiStateType'(CMC.P2_DL.cb.Cache_proc_contr[{temp_addr[`INDEX_MSB:`INDEX_LSB],tmp_blk_access}][`CACHE_MESI_MSB:`CACHE_MESI_LSB]));
+   $display("SVDEBUG::MESI State of Block with Address %x is %s in Core 1 after snoop",temp_addr,mesiStateType'(CMC.P2_DL.cb.Cache_proc_contr[{temp_addr[`INDEX_MSB:`INDEX_LSB],CMC.P2_DL.cb.Blk_access_proc}][`CACHE_MESI_MSB:`CACHE_MESI_LSB]));
    $display("SVDEBUG::MESI State of Block with Address %x is %s in Core 0 after snoop",temp_addr,mesiStateType'(CMC.P1_DL.cb.Cache_proc_contr[{temp_addr[`INDEX_MSB:`INDEX_LSB],CMC.P1_DL.cb.Blk_access_proc}][`CACHE_MESI_MSB:`CACHE_MESI_LSB]));
    topReadMissSnoopHit_inst.reset_DUT_inputs(local_intf);  
    #100;
-$display("************* TEST NO 3 : PrRd miss in Core 0 while core 1 contains block in M state *****************");
+/*$display("************* TEST NO 3 : PrRd miss in Core 0 while core 1 contains block in M state *****************");
 //Change the state to M
    test_no            += 1;
   // CMC.P2_DL.cb.Cache_proc_contr[{temp_addr[`INDEX_MSB:`INDEX_LSB],tmp_blk_access}][`CACHE_MESI_MSB:`CACHE_MESI_LSB] = 2'b11;
