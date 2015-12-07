@@ -667,6 +667,7 @@ repeat(4) begin
 end
      $display("*********** END OF TEST %d\n",18); 
 //Now do a read Hit
+Address                           = 32'hdeadbeef;
 repeat(4) begin
      topReadHit_inst                  = new();
      topReadHit_inst.Address          = Address;

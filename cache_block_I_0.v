@@ -328,7 +328,7 @@ Com_Bus_Req_proc	= 1'b0;
 	begin    
 		Data_Bus_reg      = Cache_var [{Index_proc,Blk_access_proc}][`CACHE_DATA_MSB:`CACHE_DATA_LSB];
 		CPU_stall         = 1'b0;
-		Blk_accessed 	   = 2'b00;
+		Blk_accessed 	   = Blk_access_proc;
 		Com_Bus_Req_proc	= 1'b0;			// Bus request is released
 	end
 	/*Processor read & cache miss*/
