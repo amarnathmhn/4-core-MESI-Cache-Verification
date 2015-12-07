@@ -10,10 +10,10 @@
 // This module contains the Cache Tag, MESI, data and the logic for cache access with both Processor and Snoop requests
 // The module communicates with its processor, its cache_controller, All_invalidation checking block, Common Arbiter and Common Bus (which is shared among all caches & L2 level - separate for both Data & instruction)
 
-`include "cache_def_2.v"
+`include "cache_def_1.v"
 
 /* Cache block Module declaration*/
-module cache_block_2( clk,
+module cache_block_1( clk,
 					PrWr,
                     PrRd,
                     Address,
@@ -187,7 +187,7 @@ parameter BLK4          = 2'b11;
 
 /***********************************Internal Cache Structure***************************************************/
 //Cache & LRU memory structure
-reg 	[`CACHE_DATA_SIZE-1 : 0]        Cache_var	    	[0 : `CACHE_DEPTH-1];
+reg 	[`CACHE_DATA_SIZE-1 : 0]        Cache_var	    [0 : `CACHE_DEPTH-1];
 reg 	[`CACHE_TAG_MESI_SIZE-1 : 0]    Cache_proc_contr    [0 : `CACHE_DEPTH-1];
 /***************************************************************************************************************/
 
@@ -195,7 +195,7 @@ integer i;
 
 initial 
 begin
-	for (i = 0; i < `CACHE_DEPTH-1; i = i+1)
+	for (i = 0; i < `CACHE_DEPTH-1;  i = i+1)
 	begin
 		Cache_var [i] 			= {`CACHE_DATA_SIZE{1'b0}};
 		Cache_proc_contr [i]	= {`CACHE_TAG_MESI_SIZE{1'b0}};
@@ -205,7 +205,7 @@ end
 reg [31:0] zeros = 32'h00000000;
 
 
-	
+
 
 /***************************************Driving of Bus**********************************************************/
 // Driving of Data Bus
@@ -275,40 +275,40 @@ if(PrRd || PrWr)
 begin
     if((Cache_proc_contr[{Index_proc,BLK1}][`CACHE_MESI_MSB : `CACHE_MESI_LSB] != INVALID) && (Cache_proc_contr[{Index_proc,BLK1}][`CACHE_TAG_MSB : `CACHE_TAG_LSB] == Tag_proc))
     begin
-	Access_blk_proc[0]   <= 1'b1;
+	Access_blk_proc[0]   <= 1'b0;
     end
     else
     begin 
-        Access_blk_proc[0]   <= 1'b0;
+        Access_blk_proc[0]   <= 1'b1;
     end
     if((Cache_proc_contr[{Index_proc,BLK2}][`CACHE_MESI_MSB : `CACHE_MESI_LSB] != INVALID) && (Cache_proc_contr[{Index_proc,BLK2}][`CACHE_TAG_MSB : `CACHE_TAG_LSB] == Tag_proc))
     begin
-	Access_blk_proc[1]   <= 1'b1;
+	Access_blk_proc[1]   <= 1'b0;
     end
     else
     begin
-	Access_blk_proc[1]   <= 1'b0;
+	Access_blk_proc[1]   <= 1'b1;
 end
     if((Cache_proc_contr[{Index_proc,BLK3}][`CACHE_MESI_MSB : `CACHE_MESI_LSB] != INVALID) && (Cache_proc_contr[{Index_proc,BLK3}][`CACHE_TAG_MSB : `CACHE_TAG_LSB] == Tag_proc))
     begin
-	Access_blk_proc[2]   <= 1'b1;
+	Access_blk_proc[2]   <= 1'b0;
     end
     else
     begin
-	Access_blk_proc[2]   <= 1'b0;
+	Access_blk_proc[2]   <= 1'b1;
  end
     if((Cache_proc_contr[{Index_proc,BLK4}][`CACHE_MESI_MSB : `CACHE_MESI_LSB] != INVALID) && (Cache_proc_contr[{Index_proc,BLK4}][`CACHE_TAG_MSB : `CACHE_TAG_LSB] == Tag_proc))
     begin
-	Access_blk_proc[3]   <= 1'b1;
+	Access_blk_proc[3]   <= 1'b0;
     end
     else
     begin
-        Access_blk_proc[3]   <= 1'b0;
+        Access_blk_proc[3]   <= 1'b1;
    end
 end
 else
 begin
-	Access_blk_proc <= 4'b0000;
+	Access_blk_proc <= 4'b1111;
 end
 end
 /***************************************************************************************************************/
@@ -323,11 +323,11 @@ if(PrRd || PrWr)
 begin
 	if(Access_blk_proc == 4'b1110 || Access_blk_proc == 4'b1101 || Access_blk_proc == 4'b1011 || Access_blk_proc == 4'b0111)
 	begin
-		Block_Hit_proc <= 1'b1;	
+		Block_Hit_proc = 1'b1; //BUG FIX?? change back to <=	
 	end
 	else
 	begin
-		Block_Hit_proc <= 1'b0;
+		Block_Hit_proc = 1'b0; //BUG FIX?? change back to <=
 	end
 end
 else
@@ -367,7 +367,7 @@ begin
     else if (Cache_proc_contr[{Index_proc,BLK4}][`CACHE_MESI_MSB :`CACHE_MESI_LSB] == INVALID)	
     begin
         Free_blk_proc    = BLK4;	
-        blk_free_proc    = 1'b1;
+        blk_free_proc    = 1'b1;	
     end
 	else
 	begin
@@ -574,11 +574,11 @@ Shared 			= 1'b0;
 	// Cache is missed and its requested from lower memories
 	else if (PrRd && !Block_Hit_proc)
 	begin
-		Com_Bus_Req_proc 	= 1'b1;
+		Com_Bus_Req_proc = 1'b1;
 		CPU_stall = 1'b1;
 		// Free Block is available for requested block and it is stored in cache, which is then sensed as Block_hit
 		if (blk_free_proc)
-		begin		
+		begin
 			if(Com_Bus_Gnt_proc == 1'b1)
 			begin
 				BusRd_reg       	= 1'b1;         
@@ -587,9 +587,10 @@ Shared 			= 1'b0;
 				begin
 					Cache_var[{Index_proc,Blk_access_proc}][`CACHE_DATA_MSB:`CACHE_DATA_LSB] 	= Data_Bus_Com;
 					Cache_proc_contr[{Index_proc,Blk_access_proc}][`CACHE_MESI_MSB:`CACHE_MESI_LSB] = Updated_MESI_state_proc;
+                                        
 					Cache_proc_contr[{Index_proc,Blk_access_proc}][`CACHE_TAG_MSB:`CACHE_TAG_LSB] 	= Tag_proc;
 					//Blk_accessed 									= Blk_access_proc;	// Block accessed is assigned
-			//		Com_Bus_Req_proc								= 1'b0;			// Bus request is released
+		//			Com_Bus_Req_proc								= 1'b0;			// Bus request is released
 				end
 			end
 		end
@@ -605,7 +606,7 @@ Shared 			= 1'b0;
 				// If modified then it is written to memory first, then the block is invalidated
 				MODIFIED:
 				begin
-					//Com_Bus_Req_proc 	= 1'b1;
+			//		Com_Bus_Req_proc 	= 1'b1;
 					if(Com_Bus_Gnt_proc == 1'b1)
 					begin
 						Address_Com_reg = {Cache_proc_contr[{Index_proc,Blk_access_proc}][`CACHE_TAG_MSB:`CACHE_TAG_LSB],Index_proc,2'b00};
@@ -623,11 +624,10 @@ Shared 			= 1'b0;
 			endcase
 		end
 	end
-    	// Processor Write Request Code
+    // Processor Write Request Code
 	if (PrWr)
 	begin
 		Com_Bus_Req_proc = 1'b1;
-		CPU_stall = 1'b1;
 		// If Block is hit
 		if(Block_Hit_proc == 1)
 		begin
@@ -639,14 +639,15 @@ Shared 			= 1'b0;
 					Cache_proc_contr[{Index_proc,Blk_access_proc}][`CACHE_MESI_MSB:`CACHE_MESI_LSB]	= Updated_MESI_state_proc;
 					CPU_stall 									= 1'b0;
 					Blk_accessed 									= Blk_access_proc;
-					Com_Bus_Req_proc 								= 1'b0;
+								Com_Bus_Req_proc = 1'b0;
 				end
 				// If Shared, Other shared blocks are invalidated then data is written
 				SHARED:
 				begin   
+					//Com_Bus_Req_proc = 1'b1;
 					if(Com_Bus_Gnt_proc == 1'b1)
-					begin
-						Invalidate_reg = 1'b1;
+				        begin
+					        Invalidate_reg = 1'b1;
 						Address_Com_reg     = {Tag_proc,Index_proc,2'b00}; 
 						if(All_Invalidation_done)
 						begin
@@ -655,7 +656,7 @@ Shared 			= 1'b0;
 							CPU_stall 									= 1'b0;  
 							Blk_accessed 									= Blk_access_proc;
 							Com_Bus_Req_proc 								= 1'b0;
-						end
+					        end
 					end
 				end
 				// If exclusive, directly data is written and MESI state is updated (to modified)
@@ -665,7 +666,7 @@ Shared 			= 1'b0;
 					Cache_proc_contr[{Index_proc,Blk_access_proc}][`CACHE_MESI_MSB:`CACHE_MESI_LSB] = Updated_MESI_state_proc;
 					CPU_stall 									= 1'b0;                            
 					Blk_accessed 									= Blk_access_proc;
-					Com_Bus_Req_proc 								= 1'b0;
+								Com_Bus_Req_proc = 1'b0;
 				end
 			endcase
 		end
@@ -679,7 +680,8 @@ Shared 			= 1'b0;
 		begin
 			//Com_Bus_Req_proc 	= 1'b1;
 			if(Com_Bus_Gnt_proc == 1'b1)
-			begin
+			begin   
+			  $display("BIGGUBUGGU:::BusRdX is being asserted");
 				BusRdX_reg          = 1'b1;			// Bus Read with Intent to modify is raised
 				Address_Com_reg     = {Tag_proc,Index_proc,2'b00}; 
 				if(Data_in_Bus)					// Data available in bus - provided by lower level memory or some other cache
@@ -688,7 +690,7 @@ Shared 			= 1'b0;
 					Cache_proc_contr[{Index_proc,Blk_access_proc}][`CACHE_MESI_MSB:`CACHE_MESI_LSB] = Updated_MESI_state_proc;
 					Cache_proc_contr[{Index_proc,Blk_access_proc}][`CACHE_TAG_MSB:`CACHE_TAG_LSB] 	= Tag_proc;
 					//Blk_accessed 									= Blk_access_proc;		
-					//Com_Bus_Req_proc								= 1'b0;
+				//	Com_Bus_Req_proc								= 1'b0;
 				end
 			end
 		end
@@ -704,7 +706,7 @@ Shared 			= 1'b0;
 			// If Modified, the data is upadted in to lower level memory and then the block is invalidated
 			MODIFIED:
 			begin
-				//Com_Bus_Req_proc 	= 1'b1;
+		//		Com_Bus_Req_proc 	= 1'b1;
 				if(Com_Bus_Gnt_proc == 1'b1)
 				begin
 					Address_Com_reg     = {Cache_proc_contr[{Index_proc,Blk_access_proc}][`CACHE_TAG_MSB:`CACHE_TAG_LSB],Index_proc,2'b00};
@@ -713,7 +715,7 @@ Shared 			= 1'b0;
 					if(Mem_write_done)				// Memory write is asserted by memory to cache
 					begin
 						Cache_proc_contr[{Index_proc,Blk_access_proc}][`CACHE_MESI_MSB:`CACHE_MESI_LSB] = INVALID;
-						//Com_Bus_Req_proc								= 1'b0;
+//						Com_Bus_Req_proc								= 1'b0;
 					end
 				end
 			end
@@ -721,7 +723,7 @@ Shared 			= 1'b0;
 				Cache_proc_contr[{Index_proc,Blk_access_proc}][`CACHE_MESI_MSB:`CACHE_MESI_LSB] = INVALID;
 			endcase
 		end
-	end 
+	end
 	end
 	// Code for Snoop functionalities
 	// Snoop based actions are taken only if the requested block is in Cache 
@@ -791,13 +793,10 @@ Shared 			= 1'b0;
 					begin
 						Data_Bus_Com_reg    	= Cache_var[{Index_snoop,Blk_access_snoop}][`CACHE_DATA_MSB:`CACHE_DATA_LSB];
 						Mem_wr_reg 		= 1'b1;
-							if(Mem_write_done)
-							begin
 								Shared	= 1'b1;
 								Data_in_Bus_reg 									= 1'b1;           
 								Cache_proc_contr[{Index_snoop,Blk_access_snoop}][`CACHE_MESI_MSB:`CACHE_MESI_LSB] 	= Updated_MESI_state_snoop;
-								Com_Bus_Req_snoop 									= 1'b0;
-							end                      
+								Com_Bus_Req_snoop 									= 1'b0;                
 					end
 					// If Exclusive, then Data is provided to other cache with update in its MESI state
 					EXCLUSIVE:

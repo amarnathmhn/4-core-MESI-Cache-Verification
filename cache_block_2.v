@@ -275,40 +275,40 @@ if(PrRd || PrWr)
 begin
     if((Cache_proc_contr[{Index_proc,BLK1}][`CACHE_MESI_MSB : `CACHE_MESI_LSB] != INVALID) && (Cache_proc_contr[{Index_proc,BLK1}][`CACHE_TAG_MSB : `CACHE_TAG_LSB] == Tag_proc))
     begin
-	Access_blk_proc[0]   <= 1'b1;
+	Access_blk_proc[0]   <= 1'b0;
     end
     else
     begin 
-        Access_blk_proc[0]   <= 1'b0;
+        Access_blk_proc[0]   <= 1'b1;
     end
     if((Cache_proc_contr[{Index_proc,BLK2}][`CACHE_MESI_MSB : `CACHE_MESI_LSB] != INVALID) && (Cache_proc_contr[{Index_proc,BLK2}][`CACHE_TAG_MSB : `CACHE_TAG_LSB] == Tag_proc))
     begin
-	Access_blk_proc[1]   <= 1'b1;
+	Access_blk_proc[1]   <= 1'b0;
     end
     else
     begin
-	Access_blk_proc[1]   <= 1'b0;
+	Access_blk_proc[1]   <= 1'b1;
 end
     if((Cache_proc_contr[{Index_proc,BLK3}][`CACHE_MESI_MSB : `CACHE_MESI_LSB] != INVALID) && (Cache_proc_contr[{Index_proc,BLK3}][`CACHE_TAG_MSB : `CACHE_TAG_LSB] == Tag_proc))
     begin
-	Access_blk_proc[2]   <= 1'b1;
+	Access_blk_proc[2]   <= 1'b0;
     end
     else
     begin
-	Access_blk_proc[2]   <= 1'b0;
+	Access_blk_proc[2]   <= 1'b1;
  end
     if((Cache_proc_contr[{Index_proc,BLK4}][`CACHE_MESI_MSB : `CACHE_MESI_LSB] != INVALID) && (Cache_proc_contr[{Index_proc,BLK4}][`CACHE_TAG_MSB : `CACHE_TAG_LSB] == Tag_proc))
     begin
-	Access_blk_proc[3]   <= 1'b1;
+	Access_blk_proc[3]   <= 1'b0;
     end
     else
     begin
-        Access_blk_proc[3]   <= 1'b0;
+        Access_blk_proc[3]   <= 1'b1;
    end
 end
 else
 begin
-	Access_blk_proc <= 4'b0000;
+	Access_blk_proc <= 4'b1111;
 end
 end
 /***************************************************************************************************************/

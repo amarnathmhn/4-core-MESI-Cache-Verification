@@ -71,7 +71,7 @@ class baseTestClass;
       disable fork;
     //Check if Com_Bus_Req_ is asserted  
     assert(sintf.Com_Bus_Req_snoop[core]) $display("SUCCESS:: Com_Bus_Req_snoop[%d] is asserted within timeout after BusRd/BusRdX is asserted",core);
-    else begin $display("BUG:: Com_Bus_Req_snoop_0 is not asserted after BusRd/BusRdX");
+    else begin $display("BUG:: Com_Bus_Req_snoop[%d] is not asserted after BusRd/BusRdX",core);
      status = "FAILED";
     end
    endtask : check_ComBusReqSnoop_assert
@@ -887,15 +887,21 @@ class topLocal_NonLocalCoreTest extends baseTestClass;
              temp_addr                                 = Address;
              //Check for behavior
              //Com_Bus_Req_proc and CPU_stall must be made high
+             fork
               check_ComBusReqproc_CPUStall_assert(sintf,local_cache);
+             join_none
              //Wait until arbiter grants access
+             fork
               check_ComBusGntproc_assert(sintf,local_cache);
+             join_none
              //Check if the Cache raises BusRd
-             check_BusRd_assert(sintf,local_cache);
-             //Wait until cache places Address in Address_Com bus
-             check_Address_Com_load(sintf,local_cache);
+             fork
+              check_BusRd_assert(sintf,local_cache);
+             join_none
 
              if(blockStateOtherCache == INVALID) begin
+             //Wait until cache places Address in Address_Com bus
+             check_Address_Com_load(sintf,local_cache);
                 DataWrittenByMem = 32'hbabababa;
                 //Main Memory requests for Bus Access. Wait for Bus Access Grant by the arbiter
                 sintf.Mem_snoop_req = 1;
@@ -915,8 +921,10 @@ class topLocal_NonLocalCoreTest extends baseTestClass;
              else begin
              //Check if other_cache requests for bus access from snoop side
                 check_ComBusReqSnoop_assert(sintf,other_cache);
-             //Wait for access grant
                 wait(sintf.Com_Bus_Gnt_snoop[other_cache]);
+             //Wait until cache places Address in Address_Com bus
+             check_Address_Com_load(sintf,local_cache);
+             //Wait for access grant
              //Check if Mem Oprn Abrt is raised
                 check_MemOprnAbrt_assert(sintf);
                 if(blockStateOtherCache == SHARED) begin
@@ -1063,10 +1071,10 @@ class topLocal_NonLocalCoreTest extends baseTestClass;
        if(operation == PrRd) begin
        end
        else if (operation == PrWr) begin
+             sintf.Data_Bus_reg[local_cache]  = 32'hdadadada;
              sintf.ClkBlk.Address[local_cache]        <= Address ;
              sintf.ClkBlk.PrRd[local_cache]           <= 0;
              sintf.ClkBlk.PrWr[local_cache]           <= 1;
-             sintf.Data_Bus_reg[local_cache]  = 32'hdadadada;
              //wait for CPU_stall and Com_Bus_Gnt_proc to be made high
              check_ComBusReqproc_CPUStall_assert(sintf,local_cache);
              check_ComBusGntproc_assert(sintf,local_cache);
@@ -1088,7 +1096,8 @@ class topLocal_NonLocalCoreTest extends baseTestClass;
     end
   endtask :testLocalCacheHit
   task testLocal_NonLocalCore(virtual interface globalInterface sintf);
-      if(hitMiss == MISS) begin
+    $display("Starting testLocal_NonLocalCore, hitMiss = %s ",hitMiss);  
+    if(hitMiss == MISS) begin
          createOtherCacheBlockState(sintf);
          $display("MESI STATES BEFORE TEST");
          dispMesiStates(sintf,local_cache,Address);
@@ -1097,6 +1106,7 @@ class topLocal_NonLocalCoreTest extends baseTestClass;
       end 
       else if(hitMiss == HIT) begin
          $display("WRITE HIT test on block with Address %x in local_cache %d while it is in %s state in other_cache %d",Address,local_cache,blockStateOtherCache,other_cache);
+         $display("MESI STATES BEFORE TEST");
          dispMesiStates(sintf,local_cache,Address);
          dispMesiStates(sintf,other_cache,Address);
          testLocalCacheHit(sintf);

@@ -323,11 +323,11 @@ if(PrRd || PrWr)
 begin
 	if(Access_blk_proc == 4'b1110 || Access_blk_proc == 4'b1101 || Access_blk_proc == 4'b1011 || Access_blk_proc == 4'b0111)
 	begin
-		Block_Hit_proc <= 1'b1;	
+		Block_Hit_proc = 1'b1; //BUG FIX?? change back to <=	
 	end
 	else
 	begin
-		Block_Hit_proc <= 1'b0;
+		Block_Hit_proc = 1'b0; //BUG FIX?? change back to <=
 	end
 end
 else
@@ -467,7 +467,7 @@ end
 // Block hit computation based on Access_blk value - snoop request
 always @ *
 begin
-if((BusRd || BusRdX || Invalidate))
+if((BusRd || BusRdX))
 begin
 	if(Access_blk_snoop == 4'b1110 || Access_blk_snoop == 4'b1101 || Access_blk_snoop == 4'b1011 || Access_blk_snoop == 4'b0111)
 	begin
@@ -647,8 +647,8 @@ Shared 			= 1'b0;
 					//Com_Bus_Req_proc = 1'b1;
 					if(Com_Bus_Gnt_proc == 1'b1)
 				        begin
-					        Invalidate_reg = 1'b1;
 						Address_Com_reg     = {Tag_proc,Index_proc,2'b00}; 
+					        Invalidate_reg = 1'b1;
 						if(All_Invalidation_done)
 						begin
 							Cache_var[{Index_proc,Blk_access_proc}][`CACHE_DATA_MSB:`CACHE_DATA_LSB] 	= Data_Bus;
@@ -680,7 +680,8 @@ Shared 			= 1'b0;
 		begin
 			//Com_Bus_Req_proc 	= 1'b1;
 			if(Com_Bus_Gnt_proc == 1'b1)
-			begin
+			begin   
+			  $display("BIGGUBUGGU:::BusRdX is being asserted");
 				BusRdX_reg          = 1'b1;			// Bus Read with Intent to modify is raised
 				Address_Com_reg     = {Tag_proc,Index_proc,2'b00}; 
 				if(Data_in_Bus)					// Data available in bus - provided by lower level memory or some other cache
@@ -808,15 +809,15 @@ Shared 			= 1'b0;
 					end
 				endcase
 			end
-			/*	// If snoop request is for invalidation
+				// If snoop request is for invalidation
 				else if (Invalidate)
 				begin
 					// Block is invalidated and Invalidation_done signal is asserted
 					Shared = 1'b1;
 					Cache_proc_contr[{Index_snoop,Blk_access_snoop}][`CACHE_MESI_MSB:`CACHE_MESI_LSB] 	= INVALID;
-					Invalidation_done_reg 									= 1'b1;            
+					Invalidation_done 									= 1'b1;            
 					Com_Bus_Req_snoop 									= 1'b0;
-				end*/
+				end
 		end
 			//Com_Bus_Req_snoop = 1'b0;
 	end

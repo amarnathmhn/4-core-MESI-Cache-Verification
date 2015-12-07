@@ -130,7 +130,7 @@ reg                                     BusRdX_reg;
 reg                                     Mem_wr_reg;
 reg                                     Mem_oprn_abort_reg;
 reg                                     Data_in_Bus_reg;
-//reg                                     Invalidation_done_reg;
+reg                                     Invalidation_done_reg;
 reg                                     Invalidate_reg;
 reg					Shared;
 
@@ -467,7 +467,7 @@ end
 // Block hit computation based on Access_blk value - snoop request
 always @ *
 begin
-if((BusRd || BusRdX))
+if((BusRd || BusRdX )) //BUG FIX??
 begin
 	if(Access_blk_snoop == 4'b1110 || Access_blk_snoop == 4'b1101 || Access_blk_snoop == 4'b1011 || Access_blk_snoop == 4'b0111)
 	begin
@@ -646,8 +646,8 @@ Shared 			= 1'b0;
 					//Com_Bus_Req_proc = 1'b1;
 					if(Com_Bus_Gnt_proc == 1'b1)
 					begin
-						Invalidate_reg = 1'b1;
 						Address_Com_reg     = {Tag_proc,Index_proc,2'b00}; 
+						Invalidate_reg = 1'b1;
 						if(All_Invalidation_done)
 						begin
 							Cache_var[{Index_proc,Blk_access_proc}][`CACHE_DATA_MSB:`CACHE_DATA_LSB] 	= Data_Bus;
@@ -810,16 +810,16 @@ Shared 			= 1'b0;
 					end
 				endcase
 			end
-			/*	// If snoop request is for invalidation
+				// If snoop request is for invalidation
 				else if (Invalidate)
 				begin
 					// Block is invalidated and Invalidation_done signal is asserted
 					Shared = 1'b1;
 					Cache_proc_contr[{Index_snoop,Blk_access_snoop}][`CACHE_MESI_MSB:`CACHE_MESI_LSB] 	= INVALID;
-					Invalidation_done_reg 									= 1'b1;            
+					Invalidation_done									= 1'b1;            
 					Com_Bus_Req_snoop 									= 1'b0;
-				end*/
-		end
+				end
+       		       end
 			//Com_Bus_Req_snoop = 1'b0;
 	end
 end
