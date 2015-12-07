@@ -124,9 +124,9 @@ wire                              Invalidation_done [3 : 0];
 assign      Shared = Shared_local[0] | Shared_local[1] | Shared_local[2] | Shared_local[3];
 
 // A work around assumed that when one invalidation is done then all copies are invalidated
-assign All_Invalidation_done = Invalidation_done[0] & Invalidation_done[1] & Invalidation_done[2] & Invalidation_done[3];
+//assign All_Invalidation_done = Invalidation_done[0] & Invalidation_done[1] & Invalidation_done[2] & Invalidation_done[3];
 
-//assign      All_Invalidation_done = ((!Shared_local[0] & !Invalidation_done[0]) | Invalidation_done[0]) & ((!Shared_local[1] & !Invalidation_done[1]) |   Invalidation_done[1]) & ((!Shared_local[2] & !Invalidation_done[2]) |   Invalidation_done[2]) & ((!Shared_local[3] & !Invalidation_done[3]) |   Invalidation_done[3]);
+assign      All_Invalidation_done = ((!Shared_local[0] & !Invalidation_done[0]) | Invalidation_done[0]) & ((!Shared_local[1] & !Invalidation_done[1]) |   Invalidation_done[1]) & ((!Shared_local[2] & !Invalidation_done[2]) |   Invalidation_done[2]) & ((!Shared_local[3] & !Invalidation_done[3]) |   Invalidation_done[3]);
 
 cache_wrapper_0     P1_DL (   clk,
                               PrWr[0],

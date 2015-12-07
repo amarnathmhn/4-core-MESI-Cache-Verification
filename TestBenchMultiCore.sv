@@ -423,6 +423,7 @@ $display("*********** START OF TEST %d",2);
     
 
     //Create an shared block in core 1 by doing a read miss for the exclusive block in core 0
+    Address = 32'h54321678;
     local_cache     = 1;
     other_cache     = 0;
     
@@ -437,9 +438,10 @@ $display("*********** START OF TEST %d",2);
     dispMesiStates(other_cache,Address);
 
     //Now do a PrWr on the Shared Block in Cache 0 that is shared with Cache 1
+    Address = 32'h54321678;
     local_operation = PrWr;
-    local_cache     = 0;
-    other_cache     = 1;
+    local_cache     = 1;
+    other_cache     = 0;
     testLocal_NonLocalCore(.local_intf(local_intf),
                            .local_cache(local_cache),
                            .other_cache(other_cache),
