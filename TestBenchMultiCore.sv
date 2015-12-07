@@ -198,16 +198,49 @@ cache_multi_config_1 CMC (
 //test cases consider more than 1 scenario specified in Test Plan and As
 //commented in TestCases.sv file
 topLocal_NonLocalCoreTest topLocal_NonLocalCoreTest_inst;
-task testLocal_NonLocalCore(virtual interface globalInterface local_intf,input [3:0] local_cache, input [3:0] other_cache, input commandType local_operation, input [31:0] Address, input mesiStateType blockStateOtherCache );
+topWriteHit topWriteHit_inst;
+task testLocal_NonLocalCore(virtual interface globalInterface local_intf,input [3:0] local_cache, input [3:0] other_cache, input commandType local_operation, input [31:0] Address, input mesiStateType blockStateOtherCache, input hitMissType hitMiss );
     topLocal_NonLocalCoreTest_inst                      = new();
+    topLocal_NonLocalCoreTest_inst.reset_DUT_inputs(local_intf);
     topLocal_NonLocalCoreTest_inst.Max_Resp_Delay       = 10;
     topLocal_NonLocalCoreTest_inst.local_cache          = local_cache;
     topLocal_NonLocalCoreTest_inst.other_cache          = other_cache;
     topLocal_NonLocalCoreTest_inst.operation            = local_operation;
     topLocal_NonLocalCoreTest_inst.Address              = Address;
     topLocal_NonLocalCoreTest_inst.blockStateOtherCache = blockStateOtherCache;
+    topLocal_NonLocalCoreTest_inst.hitMiss              = hitMiss;
     topLocal_NonLocalCoreTest_inst.testLocal_NonLocalCore(local_intf);
+    topLocal_NonLocalCoreTest_inst.reset_DUT_inputs(local_intf);
 endtask : testLocal_NonLocalCore
+
+//display mesi states of all blocks in a given set
+task dispMesiStates(input [3:0] core,input [31:0] Address);
+   reg [2:0] line;
+   mesiStateType mst;
+   reg [`TAG_SIZE-1:0] tag;
+   for(line = 3'b000; line <= 3'b011; line++) begin
+    case (core)
+       3'd0: begin 
+             mst = mesiStateType'(CMC.P1_DL.cb.Cache_proc_contr[{Address[`INDEX_MSB:`INDEX_LSB],line[1:0]}][`CACHE_MESI_MSB:`CACHE_MESI_LSB]);
+             tag = CMC.P1_DL.cb.Cache_proc_contr[{Address[`INDEX_MSB:`INDEX_LSB],line[1:0]}][`CACHE_TAG_MSB:`CACHE_TAG_LSB];
+             end
+       3'd1: begin
+             mst = mesiStateType'(CMC.P2_DL.cb.Cache_proc_contr[{Address[`INDEX_MSB:`INDEX_LSB],line[1:0]}][`CACHE_MESI_MSB:`CACHE_MESI_LSB]);
+             tag = CMC.P2_DL.cb.Cache_proc_contr[{Address[`INDEX_MSB:`INDEX_LSB],line[1:0]}][`CACHE_TAG_MSB:`CACHE_TAG_LSB];
+             end
+       3'd2: begin 
+             mst = mesiStateType'(CMC.P3_DL.cb.Cache_proc_contr[{Address[`INDEX_MSB:`INDEX_LSB],line[1:0]}][`CACHE_MESI_MSB:`CACHE_MESI_LSB]);
+             tag = CMC.P3_DL.cb.Cache_proc_contr[{Address[`INDEX_MSB:`INDEX_LSB],line[1:0]}][`CACHE_TAG_MSB:`CACHE_TAG_LSB];
+             end
+       3'd3: begin 
+             mst = mesiStateType'(CMC.P4_DL.cb.Cache_proc_contr[{Address[`INDEX_MSB:`INDEX_LSB],line[1:0]}][`CACHE_MESI_MSB:`CACHE_MESI_LSB]);
+             tag = CMC.P4_DL.cb.Cache_proc_contr[{Address[`INDEX_MSB:`INDEX_LSB],line[1:0]}][`CACHE_TAG_MSB:`CACHE_TAG_LSB];
+             end
+    endcase
+      $display("MESI State of block %d in Core %d with Tag %x set %x is %s",line,core,tag,Address[`INDEX_MSB:`INDEX_LSB],mst);
+   end
+   $display("\n");
+endtask :dispMesiStates
 
 reg[31:0] temp_addr;
 reg[31:0] temp_data;
@@ -233,32 +266,193 @@ initial
  for(int i=0; i <=3 ; i++) begin
     blockStateOtherCache[i] = mesiStateType'(i); 
  end
- foreach(blockStateOtherCache[j]) begin
-    $display("*********** START OF TEST %d",j);
-    /*topLocal_NonLocalCoreTest_inst                      = new();
-    topLocal_NonLocalCoreTest_inst.Max_Resp_Delay       = 10;
-    topLocal_NonLocalCoreTest_inst.local_cache          = local_cache;
-    topLocal_NonLocalCoreTest_inst.other_cache          = other_cache;
-    topLocal_NonLocalCoreTest_inst.operation            = local_operation;
-    topLocal_NonLocalCoreTest_inst.Address              = Address;
-    topLocal_NonLocalCoreTest_inst.blockStateOtherCache = blockStateOtherCache[j];
-    topLocal_NonLocalCoreTest_inst.testLocal_NonLocalCore(local_intf);*/
+/*
+//Test 1 in the test plan. local cache read miss while other cache contains block in invalid state and free  block is available
+$display("*********** START OF TEST %d",1);
     testLocal_NonLocalCore(.local_intf(local_intf),
                            .local_cache(local_cache),
                            .other_cache(other_cache),
                            .local_operation(local_operation),
                            .Address(Address),
-                           .blockStateOtherCache(blockStateOtherCache[j])); 
+                           .blockStateOtherCache(INVALID),
+                           .hitMiss(MISS)); 
+    dispMesiStates(local_cache,Address);
+    dispMesiStates(other_cache,Address);
+  
+$display("*********** END OF TEST %d\n",1);
 
-    for(line = 3'b000; line <= 3'b011; line++) begin
-      $display("MESI State of block %d in P1_DL with Address %x is %s",line,Address,mesiStateType'(CMC.P1_DL.cb.Cache_proc_contr[{Address[`INDEX_MSB:`INDEX_LSB],line[1:0]}][`CACHE_MESI_MSB:`CACHE_MESI_LSB]));
-    end
-    for(line = 3'b000; line <= 3'b011; line++) begin
-      $display("MESI State of block %d in P2_DL with Address %x is %s",line,Address,mesiStateType'(CMC.P2_DL.cb.Cache_proc_contr[{Address[`INDEX_MSB:`INDEX_LSB],line[1:0]}][`CACHE_MESI_MSB:`CACHE_MESI_LSB]));
-    end
-    Address = Address + 32'h10000000;
-    $display("*********** END OF TEST %d",j);
- end
+//Test 2 in the test plan. local cache read miss while other cache contains block in EXCLUSIVE state and free  block is available
+$display("*********** START OF TEST %d",2);
+    Address[`INDEX_MSB:`INDEX_LSB] += 1;
+    testLocal_NonLocalCore(.local_intf(local_intf),
+                           .local_cache(local_cache),
+                           .other_cache(other_cache),
+                           .local_operation(local_operation),
+                           .Address(Address),
+                           .blockStateOtherCache(EXCLUSIVE),
+                           .hitMiss(MISS)); 
+    dispMesiStates(local_cache,Address);
+    dispMesiStates(other_cache,Address);
+  
+ $display("*********** END OF TEST %d\n",2);
+
+//Test 6 in the test plan. local cache read miss while other cache contains block in SHARED state and free  block is available
+  $display("*********** START OF TEST %d",6);
+    Address[`INDEX_MSB:`INDEX_LSB] += 1;
+    //Address += 32'h10000000;
+    testLocal_NonLocalCore(.local_intf(local_intf),
+                           .local_cache(local_cache),
+                           .other_cache(other_cache),
+                           .local_operation(local_operation),
+                           .Address(Address),
+                           .blockStateOtherCache(SHARED),
+                           .hitMiss(MISS)); 
+    dispMesiStates(local_cache,Address);
+    dispMesiStates(other_cache,Address);
+  
+ $display("*********** END OF TEST %d\n",6);
+
+//Test 4 in the test plan. local cache read miss while other cache contains block in MODIFIED state and free  block is available
+  $display("*********** START OF TEST %d",4);
+    Address[`INDEX_MSB:`INDEX_LSB] += 1;
+    //Address += 32'h10000000;
+    testLocal_NonLocalCore(.local_intf(local_intf),
+                           .local_cache(local_cache),
+                           .other_cache(other_cache),
+                           .local_operation(local_operation),
+                           .Address(Address),
+                           .blockStateOtherCache(MODIFIED),
+		           .hitMiss(MISS)); 
+    dispMesiStates(local_cache,Address);
+    dispMesiStates(other_cache,Address);
+  
+ $display("*********** END OF TEST %d\n",4);
+
+//Test 8 in the test plan. local cache write miss while other cache contains block in INVALID state and free  block is available
+  $display("*********** START OF TEST %d",8);
+   // Address[`INDEX_MSB:`INDEX_LSB] += 1;
+    
+    Address += 32'h12345678;
+    local_operation = PrWr;
+    testLocal_NonLocalCore(.local_intf(local_intf),
+                           .local_cache(local_cache),
+                           .other_cache(other_cache),
+                           .local_operation(local_operation),
+                           .Address(Address),
+                           .blockStateOtherCache(INVALID),
+			   .hitMiss(MISS)); 
+    dispMesiStates(local_cache,Address);
+    dispMesiStates(other_cache,Address);
+  
+ $display("*********** END OF TEST %d\n",8);
+
+//Test 9 in the test plan. local cache write miss while other cache contains block in EXCLUSIVE state and free  block is available
+  $display("*********** START OF TEST %d",9);
+   // Address[`INDEX_MSB:`INDEX_LSB] += 1;
+    
+    Address += 32'h10000000;
+    local_operation = PrWr;
+    testLocal_NonLocalCore(.local_intf(local_intf),
+                           .local_cache(local_cache),
+                           .other_cache(other_cache),
+                           .local_operation(local_operation),
+                           .Address(Address),
+                           .blockStateOtherCache(EXCLUSIVE),
+                           .hitMiss(MISS)); 
+    dispMesiStates(local_cache,Address);
+    dispMesiStates(other_cache,Address);
+  
+ $display("*********** END OF TEST %d\n",9);
+
+//Test 11 in the test plan. local cache write miss while other cache contains block in MODIFIED state and free  block is available
+  $display("*********** START OF TEST %d",11);
+   // Address[`INDEX_MSB:`INDEX_LSB] += 1;
+    
+    Address += 32'h10000000;
+    local_operation = PrWr;
+    testLocal_NonLocalCore(.local_intf(local_intf),
+                           .local_cache(local_cache),
+                           .other_cache(other_cache),
+                           .local_operation(local_operation),
+                           .Address(Address),
+                           .blockStateOtherCache(MODIFIED),
+                           .hitMiss(MISS)); 
+    dispMesiStates(local_cache,Address);
+    dispMesiStates(other_cache,Address);
+  
+ $display("*********** END OF TEST %d\n",11); 
+
+//Test 13 in the test plan. local cache write miss while other cache contains block in SHARED state and free  block is available
+  $display("*********** START OF TEST %d",13);
+    //Address[`INDEX_MSB:`INDEX_LSB] += 1;
+    
+    Address = 32'h87654321;
+    local_operation = PrWr;
+    
+    testLocal_NonLocalCore(.local_intf(local_intf),
+                           .local_cache(local_cache),
+                           .other_cache(other_cache),
+                           .local_operation(local_operation),
+                           .Address(Address),
+                           .blockStateOtherCache(SHARED),
+                           .hitMiss(MISS)); 
+    dispMesiStates(local_cache,Address);
+    dispMesiStates(other_cache,Address);
+  
+ $display("*********** END OF TEST %d\n",13);
+*/
+//************************************************************************************************************************************************************
+//Test  15 in the test bench. local cache and other cache have a block in Shared state. Local cache writes to this block.
+//first, create a shared block in core 0 and core 1 by doing read miss for the same block in both cores
+  $display("*********** START OF TEST %d",15);
+    //Address[`INDEX_MSB:`INDEX_LSB] += 1;
+    //Create an exclusive block in core 0
+    Address = 32'h54321678;
+    local_operation = PrRd;
+    local_cache     = 0;
+    other_cache     = 1;
+    testLocal_NonLocalCore(.local_intf(local_intf),
+                           .local_cache(local_cache),
+                           .other_cache(other_cache),
+                           .local_operation(local_operation),
+                           .Address(Address),
+                           .blockStateOtherCache(INVALID),
+                           .hitMiss(MISS)); 
+    dispMesiStates(local_cache,Address);
+    dispMesiStates(other_cache,Address);
+    
+
+    //Create an shared block in core 1 by doing a read miss for the exclusive block in core 0
+    local_cache     = 1;
+    other_cache     = 0;
+    
+    testLocal_NonLocalCore(.local_intf(local_intf),
+                           .local_cache(local_cache),
+                           .other_cache(other_cache),
+                           .local_operation(local_operation),
+                           .Address(Address),
+                           .blockStateOtherCache(EXCLUSIVE),
+                           .hitMiss(MISS)); 
+    dispMesiStates(local_cache,Address);
+    dispMesiStates(other_cache,Address);
+
+    //Now do a PrWr on the Shared Block in Cache 0 that is shared with Cache 1
+    local_operation = PrWr;
+    local_cache     = 0;
+    other_cache     = 1;
+    testLocal_NonLocalCore(.local_intf(local_intf),
+                           .local_cache(local_cache),
+                           .other_cache(other_cache),
+                           .local_operation(local_operation),
+                           .Address(Address),
+                           .blockStateOtherCache(SHARED),
+                           .hitMiss(HIT)); 
+    dispMesiStates(local_cache,Address);
+    dispMesiStates(other_cache,Address);
+ $display("*********** END OF TEST %d\n",15);
+//************************************************************************************************************************************************************
+
+
  #100;
  $finish;       
  end 
@@ -267,8 +461,8 @@ initial
  
 
 
-always @(posedge g_intf.clk)
- g_intf.check_UndefinedBehavior(0);
+//always @(posedge g_intf.clk)
+ //g_intf.check_UndefinedBehavior(0);
 //Arbiter functionality
 /*always @(posedge g_intf.Com_Bus_Req_proc_0) begin
      g_intf.Com_Bus_Gnt_proc_0 = 1;
