@@ -51,7 +51,7 @@ interface globalInterface (input logic clk);
    logic [1:0]                  Current_MESI_state_proc[`CORES-1:0];
    logic [1:0]                  Current_MESI_state_snoop[`CORES-1:0];
    logic [1:0]                  Blk_accessed[`CORES-1:0];
-   logic [1:0]                  LRU_replacement_proc[`CORES-1:0];
+   logic [1:0]                  LRU_replacement_proc[2*`CORES-1:0];
    logic [1:0]                  Updated_MESI_state_proc[`CORES-1:0];
    logic [1:0]                  Updated_MESI_state_snoop[`CORES-1:0];
   //Interface of Address Segregator Block
@@ -65,7 +65,7 @@ interface globalInterface (input logic clk);
    logic [1:0] Blk_access_proc[2*`CORES-1:0];
    logic [1:0] Blk_access_snoop[2*`CORES-1:0];
 
-   logic [`LRU_SIZE-1 : 0]	LRU_var	[`CORES][0:`NUM_OF_SETS-1];
+   logic [`LRU_SIZE-1 : 0]	LRU_var	[2*`CORES][0:`NUM_OF_SETS-1];
 
    clocking ClkBlk @(posedge clk);
       output PrRd;

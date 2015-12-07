@@ -48,25 +48,25 @@ assign g_intf.Cache_var[3]            = CMC.P4_DL.cb.Cache_var;
  assign g_intf.LRU_replacement_proc[3] = CMC.P4_DL.LRU_replacement_proc;
 
 /*assign g_intf.Cache_var[4]            =  CMC.P1_IL.cb.Cache_var;
- assign g_intf.Cache_proc_contr_IL[0]     = CMC.P1_IL.cb.Cache_proc_contr;
+// assign g_intf.Cache_proc_contr_IL[4]     = CMC.P1_IL.cb.Cache_proc_contr;
  assign g_intf.LRU_var[4]              = CMC.P1_IL.cc.LRU_var;
  assign g_intf.LRU_replacement_proc[4] = CMC.P1_IL.LRU_replacement_proc;
 
 assign g_intf.Cache_var[5]             = CMC.P2_IL.cb.Cache_var;
- assign g_intf.Cache_proc_contr_IL[1]     = CMC.P2_IL.cb.Cache_proc_contr;
+ assign g_intf.Cache_proc_contr_IL[5]     = CMC.P2_IL.cb.Cache_proc_contr;
  assign g_intf.LRU_var[5]              = CMC.P2_IL.cc.LRU_var;
  assign g_intf.LRU_replacement_proc[5] = CMC.P2_IL.LRU_replacement_proc;
 
 assign g_intf.Cache_var[6]            =  CMC.P3_IL.cb.Cache_var;
- assign g_intf.Cache_proc_contr_IL[2]     = CMC.P3_IL.cb.Cache_proc_contr;
+ assign g_intf.Cache_proc_contr_IL[6]     = CMC.P3_IL.cb.Cache_proc_contr;
  assign g_intf.LRU_var[6]              = CMC.P3_IL.cc.LRU_var;
  assign g_intf.LRU_replacement_proc[6] = CMC.P3_IL.LRU_replacement_proc;
 
-assign g_intf.Cache_var[7]             = CMC.P4_IL.cb.Cache_var;
- assign g_intf.Cache_proc_contr_IL[3]     = CMC.P4_IL.cb.Cache_proc_contr;
+//assign g_intf.Cache_var[7]             = CMC.P4_IL.cb.Cache_var;
+ assign g_intf.Cache_proc_contr_IL[7]     = CMC.P4_IL.cb.Cache_proc_contr;
  assign g_intf.LRU_var[7]              = CMC.P4_IL.cc.LRU_var;
- assign g_intf.LRU_replacement_proc[7] = CMC.P4_IL.LRU_replacement_proc;
-*/
+ assign g_intf.LRU_replacement_proc[7] = CMC.P4_IL.LRU_replacement_proc; */
+
 assign g_intf.BusRd                    = CMC.BusRd;
 assign g_intf.BusRdX                   = CMC.BusRdX;
 assign g_intf.Invalidate               = CMC.Invalidate;
@@ -246,6 +246,46 @@ task writeCacheVarProcContr(input [3:0] core, input [31:0] Address,input [31:0] 
     endcase
     end
 endtask : writeCacheVarProcContr
+//Task to display data directly from Cache_var
+task dispCacheVarData(input [3:0] core, input [31:0] Address);
+    reg [`TAG_SIZE-1:0]   tag;
+    reg [`INDEX_SIZE-1:0] index;
+    reg [2:0] line;
+    reg [31:0] Data;
+    begin
+     tag   = Address[`TAG_MSB:`TAG_LSB];
+     index = Address[`INDEX_MSB:`INDEX_LSB];
+    for(line = 0; line <=3; line++) begin
+    case (core)
+       3'd0: begin 
+             Data = CMC.P1_DL.cb.Cache_var[{index,line[1:0]}][`CACHE_DATA_MSB:`CACHE_DATA_LSB];
+             end
+       3'd1: begin
+             Data = CMC.P2_DL.cb.Cache_var[{index,line[1:0]}][`CACHE_DATA_MSB:`CACHE_DATA_LSB];
+             end
+       3'd2: begin 
+             Data = CMC.P3_DL.cb.Cache_var[{index,line[1:0]}][`CACHE_DATA_MSB:`CACHE_DATA_LSB];
+             end
+       3'd3: begin 
+             Data = CMC.P4_DL.cb.Cache_var[{index,line[1:0]}][`CACHE_DATA_MSB:`CACHE_DATA_LSB];
+             end
+       3'd4: begin 
+             Data = CMC.P1_IL.cb.Cache_var[{index,line[1:0]}][`CACHE_DATA_MSB:`CACHE_DATA_LSB];
+             end
+       3'd5: begin
+             Data = CMC.P2_IL.cb.Cache_var[{index,line[1:0]}][`CACHE_DATA_MSB:`CACHE_DATA_LSB];
+             end
+       3'd6: begin 
+             Data = CMC.P3_IL.cb.Cache_var[{index,line[1:0]}][`CACHE_DATA_MSB:`CACHE_DATA_LSB];
+             end
+       3'd7: begin 
+             Data = CMC.P4_IL.cb.Cache_var[{index,line[1:0]}][`CACHE_DATA_MSB:`CACHE_DATA_LSB];
+             end
+    endcase
+    $display("Data stored in core %d in set %d in line %d is %x",core,index,line,Data);
+    end//for
+    end
+endtask : dispCacheVarData
 //display mesi states of all blocks in a given set
 task dispMesiStates(input [3:0] core,input [31:0] Address);
    reg [2:0] line;
@@ -290,6 +330,18 @@ task dispLRUvar(input [3:0] core,input [31:0] Address);
              end
        3'd3: begin 
              plru = CMC.P4_DL.cc.LRU_var[Address[`INDEX_MSB:`INDEX_LSB]];
+             end
+       3'd4: begin 
+             plru = CMC.P1_IL.cc.LRU_var[Address[`INDEX_MSB:`INDEX_LSB]];
+             end
+       3'd5: begin
+             plru = CMC.P2_IL.cc.LRU_var[Address[`INDEX_MSB:`INDEX_LSB]];
+             end
+       3'd6: begin 
+             plru = CMC.P3_IL.cc.LRU_var[Address[`INDEX_MSB:`INDEX_LSB]];
+             end
+       3'd7: begin 
+             plru = CMC.P4_IL.cc.LRU_var[Address[`INDEX_MSB:`INDEX_LSB]];
              end
     endcase
       $display("PLRU of the set with Set ID %x is %b",Address[`INDEX_MSB:`INDEX_LSB],plru);
@@ -529,7 +581,8 @@ end//while */
 //*************************************************************************************************************************************************************
 */
 
-//*******************************************Pseudo LRU TESTING*****************************************************************************************************
+//******************************************* TEST 16 Pseudo LRU TESTING*****************************************************************************************************
+/*
 $display("*********** START OF TEST %d",16);
 //Fill out a cache set
  repeat(4) begin
@@ -562,8 +615,76 @@ $display("*********************Set is full, now doing read misses*************")
      dispLRUvar(local_cache,Address);
     Address[`TAG_MSB:`TAG_LSB] += 1;
   end
-$display("*********** END OF TEST %d\n",16); 
-//******************************************* TEST 16 ***************************************************************************//
+$display("*********** END OF TEST %d\n",16);
+ */
+//******************************************* END OF TEST 16 ***************************************************************************//
+
+//******************************************* START TEST 17 Instruction Cache (IL) TESTING *****************************************************************************
+
+/*$display("*********** START OF TEST %d\n ** IL Read Miss **",17); 
+//Read Miss on IL
+     Address                           = 32'hdeadbeef;
+     local_cache                       = 5;  //P2_IL
+     topReadMiss_inst                  = new();
+     topReadMiss_inst.Address          = Address;
+     topReadMiss_inst.core             = local_cache ;
+     topReadMiss_inst.Max_Resp_Delay   = 10;
+     topReadMiss_inst.testSimpleReadMiss(local_intf);
+     //dispMesiStates(local_cache,Address);
+     #10;
+     topReadMiss_inst.reset_DUT_inputs(local_intf); 
+     #100;
+     dispLRUvar(local_cache,Address);
+     //display the data stored in P1_IL
+     dispCacheVarData(local_cache,Address); 
+$display("*********** END OF TEST %d\n",17); 
+ */
+//******************************************* END OF TEST 17 Instruction Cache (IL) TESTING ****************************************************************************
+
+//******************************************* START TEST 18 Instruction Cache (IL) TESTING *****************************************************************************
+$display("*********** START OF TEST %d\n *** Read Hit Checking for Instruction Caches",18); 
+//PLRU Checking in IL
+Address                           = 32'hdeadbeef;
+//Fill out the Cache set
+temp_data                         = 32'hbaadbadb;
+repeat(4) begin
+     local_cache                       = 4;  //P2_IL
+     topReadMiss_inst                  = new();
+     topReadMiss_inst.Address          = Address;
+     topReadMiss_inst.core             = local_cache ;
+     topReadMiss_inst.DataWrittenByMem = temp_data ;
+     topReadMiss_inst.Max_Resp_Delay   = 10;
+     topReadMiss_inst.testSimpleReadMiss(local_intf);
+     //dispMesiStates(local_cache,Address);
+     #10;
+     topReadMiss_inst.reset_DUT_inputs(local_intf); 
+     #100;
+     dispLRUvar(local_cache,Address);
+     //display the data stored in P1_IL
+     dispCacheVarData(local_cache,Address); 
+     Address[`TAG_MSB:`TAG_LSB] += 1;  //move to next block
+     temp_data                  += 32'h00000001;  //increment the data just so that each block has different data
+end
+     $display("*********** END OF TEST %d\n",18); 
+//Now do a read Hit
+Address                           = 32'hdeadbeef;
+repeat(4) begin
+     topReadHit_inst                  = new();
+     topReadHit_inst.Address          = Address;
+     topReadHit_inst.core             = local_cache ;
+     topReadHit_inst.Max_Resp_Delay   = 10;
+     topReadHit_inst.testSimpleReadHit(local_intf);
+     $display("Data on Data_Bus = %x", CMC.Data_Bus[local_cache]);
+     //dispMesiStates(local_cache,Address);
+     #10;
+     topReadHit_inst.reset_DUT_inputs(local_intf); 
+     #100;
+     dispLRUvar(local_cache,Address);
+     //display the data stored in P1_IL
+     dispCacheVarData(local_cache,Address); 
+     Address[`TAG_MSB:`TAG_LSB] += 1;  //move to next block
+end
+//******************************************* END OF TEST 18 Instruction Cache (IL) TESTING ****************************************************************************
 #100;
 $finish;       
 end 

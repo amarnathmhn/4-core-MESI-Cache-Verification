@@ -528,7 +528,7 @@ class topReadMiss extends baseTestClass;
   endtask :drive 
 
   task check(virtual globalInterface sintf);
-     DataWrittenByMem =  32'hBABABABA;
+     //DataWrittenByMem =  32'hBABABABA;
      //Check for behavior
     //Com_Bus_Req_proc and CPU_stall must be made high
      check_ComBusReqproc_CPUStall_assert(sintf,core);
@@ -580,7 +580,7 @@ class topReadMiss extends baseTestClass;
 //   Creates the simple Read stimulus and drives it to the DUT and checks for the behavior. Take the single Top Level Cache interface as input.
    task testSimpleReadMiss(virtual globalInterface sintf);
       
-     $display("\n****** Test topReadMiss Started for core = %d ****** ",core); 
+     $display("\n****** Test topReadMiss Started for core = %d for Address %x****** ",core,Address); 
      
       drive(sintf); 
       check(sintf);
@@ -677,7 +677,7 @@ endclass : topReadMissSnoopHit
 class topReadHit extends baseTestClass;
    rand reg[31:0] last_data_stored;
    task testSimpleReadHit(virtual interface globalInterface sintf);
-      $display("\n****** Test topReadHit Started ****** "); 
+      $display("\n****** Test topReadHit Started for core = %d and Address = %x****** ",core,Address); 
       
       //Do a Read Hit
       sintf.ClkBlk.Address[core] <= Address;

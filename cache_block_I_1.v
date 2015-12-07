@@ -345,7 +345,7 @@ Com_Bus_Req_proc	= 1'b0;
 				Address_Com_reg 	= {Tag_proc, Index_proc, 2'b00};
 				if (Data_in_Bus)	// Signal from Other shared cache block or lower level L2 memory
 				begin
-					Data_Bus_reg = Cache_var[{Index_proc,Blk_access_proc}][`CACHE_DATA_MSB:`CACHE_DATA_LSB];
+				        Cache_var[{Index_proc,Blk_access_proc}][`CACHE_DATA_MSB:`CACHE_DATA_LSB] = Data_Bus_Com;
 					Cache_proc_contr[{Index_proc,Blk_access_proc}][`CACHE_VALID_BIT_MSB:`CACHE_VALID_BIT_LSB] = VALID;
 					Cache_proc_contr[{Index_proc,Blk_access_proc}][`CACHE_TAG_MSB:`CACHE_TAG_LSB] 	         = Tag_proc;
 					//Blk_accessed 									= Blk_access_proc;	// Block accessed is assigned
