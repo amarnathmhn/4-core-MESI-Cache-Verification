@@ -107,8 +107,8 @@ parameter BLK4          = 2'b11;
 
 /***********************************Internal Cache Structure***************************************************/
 //Cache & LRU memory structure
-reg 	[`CACHE_DATA_SIZE-1 : 0]        Cache_var	         [0 : 1024];
-reg 	[`CACHE_TAG_VALID_SIZE-1 : 0]    Cache_proc_contr   [0 : 1024];
+reg 	[`CACHE_DATA_SIZE-1 : 0]        Cache_var	         [0 : `CACHE_DEPTH-1];
+reg 	[`CACHE_TAG_VALID_SIZE-1 : 0]    Cache_proc_contr   [0 : `CACHE_DEPTH-1];
 /***************************************************************************************************************/
 
 integer i;
@@ -164,7 +164,7 @@ end
 
 /**************** Code to check if the requested block is present in Cache - processor request******************/
 /*Compare the tags to see if there is a match in any of the cache blocks in the set - designed for 4 way associativity*/
-always @ (Index_proc or Tag_proc or Blk_offset_proc or PrRd or Data_in_Bus)
+always @ *//(Index_proc or Tag_proc or Blk_offset_proc or PrRd or Data_in_Bus)
 begin
 if(PrRd)
 begin

@@ -47,25 +47,25 @@ assign g_intf.Cache_var[3]            = CMC.P4_DL.cb.Cache_var;
  assign g_intf.LRU_var[3]              = CMC.P4_DL.cc.LRU_var;
  assign g_intf.LRU_replacement_proc[3] = CMC.P4_DL.LRU_replacement_proc;
 
-/*assign g_intf.Cache_var[4]            =  CMC.P1_IL.cb.Cache_var;
-// assign g_intf.Cache_proc_contr_IL[4]     = CMC.P1_IL.cb.Cache_proc_contr;
+assign g_intf.Cache_var[4]            =  CMC.P1_IL.cb.Cache_var;
+// assign g_intf.Cache_proc_contr_IL[0]     = CMC.P1_IL.cb.Cache_proc_contr;
  assign g_intf.LRU_var[4]              = CMC.P1_IL.cc.LRU_var;
  assign g_intf.LRU_replacement_proc[4] = CMC.P1_IL.LRU_replacement_proc;
 
 assign g_intf.Cache_var[5]             = CMC.P2_IL.cb.Cache_var;
- assign g_intf.Cache_proc_contr_IL[5]     = CMC.P2_IL.cb.Cache_proc_contr;
+ assign g_intf.Cache_proc_contr_IL[1]     = CMC.P2_IL.cb.Cache_proc_contr;
  assign g_intf.LRU_var[5]              = CMC.P2_IL.cc.LRU_var;
  assign g_intf.LRU_replacement_proc[5] = CMC.P2_IL.LRU_replacement_proc;
 
 assign g_intf.Cache_var[6]            =  CMC.P3_IL.cb.Cache_var;
- assign g_intf.Cache_proc_contr_IL[6]     = CMC.P3_IL.cb.Cache_proc_contr;
+ assign g_intf.Cache_proc_contr_IL[2]     = CMC.P3_IL.cb.Cache_proc_contr;
  assign g_intf.LRU_var[6]              = CMC.P3_IL.cc.LRU_var;
  assign g_intf.LRU_replacement_proc[6] = CMC.P3_IL.LRU_replacement_proc;
 
-//assign g_intf.Cache_var[7]             = CMC.P4_IL.cb.Cache_var;
- assign g_intf.Cache_proc_contr_IL[7]     = CMC.P4_IL.cb.Cache_proc_contr;
+assign g_intf.Cache_var[7]             = CMC.P4_IL.cb.Cache_var;
+ assign g_intf.Cache_proc_contr_IL[3]     = CMC.P4_IL.cb.Cache_proc_contr;
  assign g_intf.LRU_var[7]              = CMC.P4_IL.cc.LRU_var;
- assign g_intf.LRU_replacement_proc[7] = CMC.P4_IL.LRU_replacement_proc; */
+ assign g_intf.LRU_replacement_proc[7] = CMC.P4_IL.LRU_replacement_proc; 
 
 assign g_intf.BusRd                    = CMC.BusRd;
 assign g_intf.BusRdX                   = CMC.BusRdX;
@@ -648,7 +648,7 @@ Address                           = 32'hdeadbeef;
 //Fill out the Cache set
 temp_data                         = 32'hbaadbadb;
 repeat(4) begin
-     local_cache                       = 4;  //P2_IL
+     local_cache                       = 6;  //P3_IL
      topReadMiss_inst                  = new();
      topReadMiss_inst.Address          = Address;
      topReadMiss_inst.core             = local_cache ;
