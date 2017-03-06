@@ -100,6 +100,31 @@ interface globalInterface (input logic clk);
      end
    
   
-  endtask : check_UndefinedBehavior  
+  endtask : check_UndefinedBehavior 
+
+
+  // checkers using systemverilog assertions
+// CPU stall and com bus req proc assert checker for all cores
+
+// define generic assertions
+sequence comBusReqProcAndCpuStallSeq(corenum);
+	##[1:$] $rose(Com_Bus_Req_Proc[corenum]) ##0 $rose(CPU_stall[corenum]);
+endsequence
+
+property PrRdAndPrWrAndComBusCpuStall(cmd,corenum);
+	@(posedge clk) $rose(cmd) |-> comBusReqProcAndCpuStallSeq(corenum);
+endproperty
+
+genvar i;
+generate
+
+	for( i = 0; i < `CORES; i++) begin
+		cmdAndComBusCpuStall:assert property(PrRdAndPrWrAndComBusCpuStall( PrRd[i], i) ) ; // for processor read
+		cmdAndComBusCpuStall:assert property(PrRdAndPrWrAndComBusCpuStall( PrWr[i], i) ) ; // for processor write
+	end
+endgenerate 
+   
+// 
+
 endinterface 
 
